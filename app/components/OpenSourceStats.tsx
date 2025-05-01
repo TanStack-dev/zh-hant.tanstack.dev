@@ -59,7 +59,7 @@ const NpmDownloadCounter = ({
 export default function OssStats() {
   const { data: github } = useSuspenseQuery(
     convexQuery(api.stats.getGithubOwner, {
-      owner: 'tanstack-dev',
+      owner: 'tanstack',
     })
   )
   const { data: npm } = useSuspenseQuery(
