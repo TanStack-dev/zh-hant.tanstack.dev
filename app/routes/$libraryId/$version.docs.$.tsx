@@ -25,7 +25,7 @@ export const Route = createFileRoute('/$libraryId/$version/docs/$')({
 
     return {
       meta: seo({
-        title: `${loaderData?.title} | ${library.name} Docs`,
+        title: `${loaderData?.title} | ${library.name} 文檔`,
         description: loaderData?.description,
       }),
     }

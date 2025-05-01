@@ -45,28 +45,24 @@ export default function StoreVersionIndex() {
             lg:text-5xl lg:max-w-2xl"
           >
             <span className="underline decoration-dashed decoration-gray-500 decoration-3 underline-offset-2">
-              Framework agnostic
+              框架無關
             </span>{' '}
-            type-safe store w/ reactive framework adapters
+            類型安全存儲庫與反應式框架適配器
           </h2>
           <p
             className="text opacity-90 max-w-[500px]
             lg:text-xl lg:max-w-[800px]"
           >
-            Level up your state management with TanStack Store – the
-            framework-agnostic, type-safe store. Enjoy{' '}
-            <strong>
-              minimal setup, granular APIs, and seamless adaptability across
-              frameworks
-            </strong>
-            . Simplify your development and boost efficiency with TanStack
-            Store.
+            使用 TanStack Store 提升您的狀態管理 –
+            框架無關、類型安全的存儲庫。享受{' '}
+            <strong>最小設置、精細 API 和跨框架的無縫適應性</strong>
+            。簡化您的開發並通過 TanStack Store 提高效率。
           </p>
           <Link
             to="./docs/"
             className={`py-2 px-4 bg-stone-600 text-white rounded uppercase font-extrabold`}
           >
-            Get Started
+            開始使用
           </Link>
         </div>
         <LibraryFeatureHighlights
@@ -74,7 +70,7 @@ export default function StoreVersionIndex() {
         />
         <div className="px-4 w-[500px] max-w-full mx-auto">
           <h3 className="text-center text-3xl leading-8 font-extrabold tracking-tight sm:text-4xl sm:leading-10 lg:leading-none mt-8">
-            Partners
+            合作夥伴
           </h3>
           <div className="h-8" />
           <div
@@ -84,19 +80,19 @@ export default function StoreVersionIndex() {
                         dark:bg-black/40 dark:shadow-none"
           >
             <span className="flex items-center gap-2 p-12 text-4xl text-rose-500 font-black uppercase">
-              Store <TbHeartHandshake /> You?
+              Store <TbHeartHandshake /> 與您?
             </span>
             <div className="flex flex-col p-4 gap-4">
               <div>
-                We're looking for a TanStack Store OSS Partner to go above and
-                beyond the call of sponsorship. Are you as invested in TanStack
-                Store as we are? Let's push the boundaries of Store together!
+                我們正在尋找 TanStack Store
+                開源合作夥伴，希望您能超越一般贊助的範疇。您是否與我們一樣投入於
+                TanStack Store？讓我們一起推動 Store 的發展界限！
               </div>
               <a
                 href="mailto:partners@tanstack.com?subject=TanStack Store Partnership"
                 className="text-blue-500 uppercase font-black text-sm"
               >
-                Let's chat
+                一起交流
               </a>
             </div>
           </div>
@@ -104,7 +100,7 @@ export default function StoreVersionIndex() {
 
         <div className="relative text-lg overflow-hidden">
           <h3 className="text-center text-3xl leading-8 font-extrabold tracking-tight sm:text-4xl sm:leading-10 lg:leading-none mt-8">
-            Sponsors
+            贊助商
           </h3>
           <div
             className="my-4 flex flex-wrap mx-auto max-w-screen-lg"
@@ -125,100 +121,24 @@ export default function StoreVersionIndex() {
               href="https://github.com/sponsors/tannerlinsley"
               className="inline-block bg-green-500 px-4 py-2 text-xl mx-auto leading-tight font-extrabold tracking-tight text-white rounded-full"
             >
-              Become a Sponsor!
+              成為贊助商！
             </a>
           </div>
         </div>
 
         <LandingPageGad />
 
-        {/* <div className="flex flex-col gap-4">
-          <div className="px-4 sm:px-6 lg:px-8  mx-auto container max-w-3xl sm:text-center">
-            <h3 className="text-3xl text-center leading-8 font-extrabold tracking-tight sm:text-4xl sm:leading-10 lg:leading-none mt-2">
-              Less code, fewer edge cases.
-            </h3>
-            <p className="my-4 text-xl leading-7  text-gray-600">
-              Instead of encouraging hasty abstractions and hook-focused APIs,
-              TanStack Form embraces composition where it counts by giving you
-              headless APIs via components (and hooks if you want them of
-              course). TanStack Form is designed to be used directly in your
-              components and UI. This means less code, fewer edge cases, and
-              deeper control over your UI. Try it out with one of the examples
-              below!
-            </p>
-            <div className="flex flex-wrap gap-2 justify-center">
-              {(
-                [
-                  { label: 'React', value: 'react' },
-                  { label: 'Solid', value: 'solid' },
-                  { label: 'Svelte', value: 'svelte' },
-                  { label: 'Vue', value: 'vue' },
-                ] as const
-              ).map((item) => (
-                <button
-                  key={item.value}
-                  className={`inline-block py-2 px-4 rounded text-black uppercase font-extrabold ${
-                    item.value === framework
-                      ? 'bg-gray-500'
-                      : 'bg-gray-300 dark:bg-gray-700 hover:bg-gray-400'
-                  }`}
-                  onClick={() => setFramework(item.value)}
-                >
-                  {item.label}
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {['solid', 'vue', 'svelte'].includes(framework) ? (
-          <div className="px-2">
-            <div className="p-8 text-center text-lg w-full max-w-screen-lg mx-auto bg-black text-white rounded-xl">
-              Looking for the <strong>@tanstack/{framework}-form</strong>{' '}
-              example? We could use your help to build the{' '}
-              <strong>@tanstack/{framework}-form</strong> adapter! Join the{' '}
-              <a
-                href="https://tlinz.com/discord"
-                className="text-teal-500 font-bold"
-              >
-                TanStack Discord Server
-              </a>{' '}
-              and let's get to work!
-            </div>
-          </div>
-        ) : (
-          <div className="bg-white dark:bg-black">
-            <iframe
-              key={framework}
-              src={`https://stackblitz.com/github/${repo}/tree/${branch}/examples/${framework}/simple?embed=1&theme=${
-                isDark ? 'dark' : 'light'
-              }`}
-              title={`tanstack//${framework}-form: simple`}
-              sandbox="allow-forms allow-modals allow-popups allow-presentation allow-same-origin allow-scripts"
-              className="shadow-2xl max-h-[800px]"
-              loading="lazy"
-              style={{
-                width: '100%',
-                height: '80vh',
-                border: '0',
-              }}
-            ></iframe>
-          </div>
-        )} */}
-
         <div className="flex flex-col gap-4 items-center">
           <div className="font-extrabold text-xl lg:text-2xl">
-            Wow, you've come a long way!
+            哇，您已經走了很長一段路！
           </div>
-          <div className="italic font-sm opacity-70">
-            Only one thing left to do...
-          </div>
+          <div className="italic font-sm opacity-70">只剩下一件事要做...</div>
           <div>
             <Link
               to="./docs/"
               className={`inline-block py-2 px-4 bg-stone-700 rounded text-white uppercase font-extrabold`}
             >
-              Get Started!
+              開始使用！
             </Link>
           </div>
         </div>

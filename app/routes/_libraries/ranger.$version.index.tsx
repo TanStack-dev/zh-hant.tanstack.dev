@@ -52,23 +52,19 @@ export default function VersionIndex() {
             md:text-3xl
             lg:text-5xl lg:max-w-2xl"
           >
-            <span className="underline decoration-dashed decoration-yellow-500 decoration-3 underline-offset-2">
-              Headless
-            </span>{' '}
-            Modern and headless Range Selector UI Library
+            現代且無頭的範圍選擇器 UI 庫
           </h2>
           <p
             className="text opacity-90 max-w-sm
             lg:text-xl lg:max-w-2xl"
           >
-            A fully typesafe hooks for building range and multi-range sliders in
-            React.
+            一個完全類型安全的 hooks，用於在 React 中構建範圍和多範圍滑塊。
           </p>
           <Link
             to="./docs/overview"
             className={`py-2 px-4 bg-pink-500 rounded text-white uppercase font-extrabold`}
           >
-            Get Started
+            開始使用
           </Link>
         </div>
         <LibraryFeatureHighlights
@@ -77,7 +73,7 @@ export default function VersionIndex() {
 
         <div className="relative text-lg overflow-hidden">
           <h3 className="text-center text-3xl leading-8 font-extrabold tracking-tight sm:text-4xl sm:leading-10 lg:leading-none mt-8">
-            Sponsors
+            贊助商
           </h3>
           <div
             className="my-4 flex flex-wrap mx-auto max-w-screen-lg"
@@ -98,7 +94,7 @@ export default function VersionIndex() {
               href="https://github.com/sponsors/tannerlinsley"
               className="inline-block bg-green-500 px-4 py-2 text-xl mx-auto leading-tight font-extrabold tracking-tight text-white rounded-full"
             >
-              Become a Sponsor!
+              成為贊助商！
             </a>
           </div>
         </div>
@@ -108,10 +104,10 @@ export default function VersionIndex() {
         <div className="flex flex-col gap-4">
           <div className="px-4 sm:px-6 lg:px-8  mx-auto container max-w-3xl sm:text-center">
             <h3 className="text-3xl text-center leading-8 font-extrabold tracking-tight sm:text-4xl sm:leading-10 lg:leading-none mt-2">
-              Take it for a spin!
+              試試看吧！
             </h3>
             <p className="my-4 text-xl leading-7  text-gray-600">
-              Let's see it in action!
+              讓我們看看它的效果！
             </p>
           </div>
         </div>
@@ -137,17 +133,15 @@ export default function VersionIndex() {
         </div>
         <div className="flex flex-col gap-4 items-center">
           <div className="font-extrabold text-xl lg:text-2xl">
-            Wow, you've come a long way!
+            哇，您已經看了很長一段路！
           </div>
-          <div className="italic font-sm opacity-70">
-            Only one thing left to do...
-          </div>
+          <div className="italic font-sm opacity-70">只剩下一件事要做...</div>
           <div>
             <Link
               to="./docs/overview"
               className={`inline-block py-2 px-4 bg-pink-500 rounded text-white uppercase font-extrabold`}
             >
-              Get Started!
+              開始使用！
             </Link>
           </div>
         </div>

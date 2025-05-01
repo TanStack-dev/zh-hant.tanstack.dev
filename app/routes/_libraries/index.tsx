@@ -38,10 +38,10 @@ export const gradients = [
 
 const courses = [
   {
-    name: 'The Official TanStack React Query Course',
+    name: '官方 TanStack React Query 課程',
     cardStyles: `border-t-4 border-red-500 hover:(border-green-500)`,
     href: 'https://query.gg/?s=tanstack',
-    description: `Learn how to build enterprise quality apps with TanStack's React Query the easy way with our brand new course.`,
+    description: `通過我們全新的課程，輕鬆學習如何使用 TanStack 的 React Query 構建企業級應用程序。`,
   },
 ]
 
@@ -126,18 +126,17 @@ function Index() {
             md:text-4xl md:max-w-2xl
             2xl:text-5xl lg:max-w-2xl text-balance"
             >
-              High-quality open-source software for{' '}
+              為{' '}
               <span className="underline decoration-dashed decoration-yellow-500 decoration-3 underline-offset-2">
-                web developers.
-              </span>
+                網頁開發者
+              </span>{' '}
+              打造的高品質開源軟件。
             </h2>
             <p
               className="text opacity-90 max-w-sm
             lg:text-xl lg:max-w-2xl text-balance"
             >
-              Headless, type-safe, & powerful utilities for Web Applications,
-              Routing, State Management, Data Visualization, Datagrids/Tables,
-              and more.
+              無頭、類型安全且功能強大的工具，適用於網頁應用程序、路由、狀態管理、數據可視化、數據表格以及更多。
             </p>
           </div>
         </div>
@@ -147,7 +146,7 @@ function Index() {
         </div>
         <div className="my-16" />
         <div className="px-4 lg:max-w-screen-lg md:mx-auto">
-          <h3 className={`text-4xl font-light`}>Open Source Libraries</h3>
+          <h3 className={`text-4xl font-light`}>開源庫</h3>
 
           {Object.entries(librariesByGroup).map(
             ([groupName, groupLibraries]: [string, Library[]]) => (
@@ -242,7 +241,7 @@ function Index() {
                               className="inline-flex items-center gap-2 px-4 py-2 bg-black/5 dark:bg-white/10 
                               rounded-full text-sm font-medium text-gray-900 dark:text-white"
                             >
-                              Click to learn more
+                              點擊了解更多
                               <svg
                                 className="w-4 h-4 transform transition-transform duration-200 group-hover:translate-x-0.5"
                                 fill="none"
@@ -292,7 +291,7 @@ function Index() {
         </div>
         <hr className="my-16 border-gray-200 dark:border-gray-500/10" />
         <div className="px-4 lg:max-w-screen-lg md:mx-auto">
-          <h3 className={`text-4xl font-light mb-6`}>Partners</h3>
+          <h3 className={`text-4xl font-light mb-6`}>合作夥伴</h3>
           <div className={`grid grid-cols-1 gap-6 sm:grid-cols-2`}>
             {partners.map((partner) => {
               return (
@@ -316,7 +315,7 @@ function Index() {
         </div>
         <hr className="my-16 border-gray-200 dark:border-gray-500/10" />
         <div className={`lg:max-w-screen-lg px-4 mx-auto`}>
-          <h3 className={`text-4xl font-light mb-6`}>Courses</h3>
+          <h3 className={`text-4xl font-light mb-6`}>課程</h3>
           <div className={`mt-4 grid grid-cols-1 gap-4`}>
             {courses.map((course) => (
               <a
@@ -341,7 +340,7 @@ function Index() {
                   <div
                     className={`inline-block mt-4 px-4 py-2 bg-green-500 text-white rounded shadow uppercase font-black text-sm`}
                   >
-                    Check it out →
+                    立即查看 →
                   </div>
                 </div>
               </a>
@@ -350,7 +349,7 @@ function Index() {
         </div>
         <hr className="my-16 border-gray-200 dark:border-gray-500/10" />
         <div className={`lg:max-w-screen-lg px-4 mx-auto`}>
-          <h3 className={`text-4xl font-light`}>OSS Sponsors</h3>
+          <h3 className={`text-4xl font-light`}>開源贊助商</h3>
           <div className="h-6" />
           <div
             style={{
@@ -373,17 +372,16 @@ function Index() {
                 href="https://github.com/sponsors/tannerlinsley"
                 className={`inline-block p-4 bg-green-500 rounded text-white uppercase font-black`}
               >
-                Become a Sponsor!
+                成為贊助商！
               </a>
             </div>
             <div className={`h-4`} />
             <p className={`italic mx-auto max-w-screen-sm text-gray-500`}>
-              Sponsors get special perks like{' '}
+              贊助商可獲得特殊福利，如{' '}
               <strong>
-                private discord channels, priority issue requests, direct
-                support and even course vouchers
+                私人 Discord 頻道、優先問題請求、直接支持甚至課程優惠券
               </strong>
-              !
+              ！
             </p>
           </div>
         </div>
@@ -411,11 +409,10 @@ function Index() {
               />
             </div>
             <div className={`sm:col-span-2`}>
-              <h3 className={`text-3xl`}>TanStack on Discord</h3>
+              <h3 className={`text-3xl`}>TanStack 的 Discord 社區</h3>
               <p className={`mt-4`}>
-                The official TanStack community to ask questions, network and
-                make new friends and get lightning fast news about what's coming
-                next for TanStack!
+                TanStack 的官方社區，可以提問、交流、結交新朋友，並獲取關於
+                TanStack 未來動向的最新消息！
               </p>
             </div>
             <div className={`flex items-center justify-center`}>
@@ -426,7 +423,7 @@ function Index() {
                 text-center rounded shadow-lg z-10 uppercase font-black`}
                 rel="noreferrer"
               >
-                Join TanStack Discord
+                加入 TanStack Discord
               </a>
             </div>
           </div>
@@ -447,7 +444,7 @@ function Index() {
               >
                 <div>
                   <div className={`relative inline-block`}>
-                    <h3 className={`text-3xl`}>Subscribe to Bytes</h3>
+                    <h3 className={`text-3xl`}>訂閱 Bytes</h3>
                     <figure className={`absolute top-0 right-[-48px]`}>
                       <img
                         src={bytesImage}
@@ -458,16 +455,14 @@ function Index() {
                     </figure>
                   </div>
 
-                  <h3 className={`text-lg mt-1`}>
-                    The Best JavaScript Newsletter
-                  </h3>
+                  <h3 className={`text-lg mt-1`}>最佳 JavaScript 通訊</h3>
                 </div>
                 <div className={`grid grid-cols-3 mt-4 gap-2`}>
                   <input
                     disabled={bytesSignupMutation.status === 'pending'}
                     className={`col-span-2 p-3 placeholder-gray-400 text-black bg-gray-200 rounded text-sm outline-none focus:outline-none w-full dark:(text-white bg-gray-700)`}
                     name="email_address"
-                    placeholder="Your email address"
+                    placeholder="您的電子郵件地址"
                     type="text"
                     required
                   />
@@ -477,8 +472,8 @@ function Index() {
                   >
                     <span>
                       {bytesSignupMutation.status === 'pending'
-                        ? 'Loading ...'
-                        : 'Subscribe'}
+                        ? '載入中...'
+                        : '訂閱'}
                     </span>
                   </button>
                 </div>
@@ -486,16 +481,16 @@ function Index() {
                   <p
                     className={`text-sm text-red-500 font-semibold italic mt-2`}
                   >
-                    Looks like something went wrong. Please try again.
+                    似乎出了些問題。請重試。
                   </p>
                 ) : (
                   <p className={`text-sm opacity-30 font-semibold italic mt-2`}>
-                    Join over 100,000 devs
+                    加入超過100,000名開發者的行列
                   </p>
                 )}
               </form>
             ) : (
-              <p>🎉 Thank you! Please confirm your email</p>
+              <p>🎉 感謝您！請確認您的電子郵件</p>
             )}
           </div>
         </div>

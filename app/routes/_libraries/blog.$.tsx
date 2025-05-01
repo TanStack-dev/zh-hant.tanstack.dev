@@ -18,7 +18,7 @@ const fetchBlogPost = createServerFn({ method: 'GET' })
       throw new Error('Invalid docs path')
     }
 
-    const filePath = `app/blog/${docsPath}.md`
+    const filePath = `app/blog/zh-hant/${docsPath}.md`
 
     const post = allPosts.find((post) => post.slug === docsPath)
 
@@ -91,7 +91,7 @@ ${content}`
       <Doc
         title={title}
         content={blogContent}
-        repo={'tanstack/tanstack.com'}
+        repo={'tanstack-dev/zh-hant.tanstack.dev'}
         branch={'main'}
         filePath={filePath}
       />
