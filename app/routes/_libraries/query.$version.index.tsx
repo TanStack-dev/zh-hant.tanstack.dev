@@ -26,12 +26,12 @@ export const Route = createFileRoute('/_libraries/query/$version/')({
   }),
 })
 
-const librariesRouteApi = getRouteApi('/_libraries')
+// const librariesRouteApi = getRouteApi('/_libraries')
 
 const library = getLibrary('query')
 
 export default function VersionIndex() {
-  const { sponsorsPromise } = librariesRouteApi.useLoaderData()
+  // const { sponsorsPromise } = librariesRouteApi.useLoaderData()
   const { version } = Route.useParams()
   const branch = getBranch(queryProject, version)
   const [framework, setFramework] = React.useState<Framework>('react')
@@ -204,6 +204,7 @@ export default function VersionIndex() {
             </div>
           </div>
 
+          {/* 
           <div className="relative text-lg overflow-hidden">
             <h3 className="text-center text-3xl leading-8 font-extrabold tracking-tight sm:text-4xl sm:leading-10 lg:leading-none mt-8">
               贊助商
@@ -231,6 +232,7 @@ export default function VersionIndex() {
               </a>
             </div>
           </div>
+          */}
 
           <div className="mx-auto max-w-[400px] flex flex-col gap-2 items-center">
             <div className="shadow-lg rounded-lg overflow-hidden bg-white dark:bg-gray-800 dark:text-white">

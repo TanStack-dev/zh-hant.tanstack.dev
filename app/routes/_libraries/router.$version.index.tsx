@@ -26,12 +26,12 @@ export const Route = createFileRoute('/_libraries/router/$version/')({
   }),
 })
 
-const librariesRouteApi = getRouteApi('/_libraries')
+// const librariesRouteApi = getRouteApi('/_libraries')
 
 const library = getLibrary('router')
 
 function RouterVersionIndex() {
-  const { sponsorsPromise } = librariesRouteApi.useLoaderData()
+  // const { sponsorsPromise } = librariesRouteApi.useLoaderData()
   const { version } = Route.useParams()
   const branch = getBranch(routerProject, version)
   const [framework] = React.useState<Framework>('react')
@@ -75,6 +75,7 @@ function RouterVersionIndex() {
         </Link>
       </div>
       <LibraryFeatureHighlights featureHighlights={library.featureHighlights} />
+
       <div className="px-4 lg:max-w-screen-lg md:mx-auto mx-auto">
         <h3 className="text-center text-3xl leading-8 font-extrabold tracking-tight sm:text-4xl sm:leading-10 lg:leading-none mt-8">
           合作夥伴
@@ -155,6 +156,7 @@ function RouterVersionIndex() {
         </span>
       </div> */}
 
+      {/* 
       <div className="relative text-lg overflow-hidden">
         <h3 className="text-center text-3xl leading-8 font-extrabold tracking-tight sm:text-4xl sm:leading-10 lg:leading-none mt-8">
           贊助商
@@ -182,6 +184,7 @@ function RouterVersionIndex() {
           </a>
         </div>
       </div>
+      */}
 
       <div>
         <div className="flex flex-col gap-4">

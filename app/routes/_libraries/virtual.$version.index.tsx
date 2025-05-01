@@ -29,12 +29,12 @@ export const Route = createFileRoute('/_libraries/virtual/$version/')({
   }),
 })
 
-const librariesRouteApi = getRouteApi('/_libraries')
+// const librariesRouteApi = getRouteApi('/_libraries')
 
 const library = getLibrary('virtual')
 
 export default function RouteComp() {
-  const { sponsorsPromise } = librariesRouteApi.useLoaderData()
+  // const { sponsorsPromise } = librariesRouteApi.useLoaderData()
   const { version } = Route.useParams()
   const [framework, setFramework] = React.useState<Framework>('react')
   const branch = getBranch(virtualProject, version)
@@ -145,6 +145,7 @@ export default function RouteComp() {
         </div>
       </div>
 
+      {/* 
       <div className="relative text-lg overflow-hidden">
         <h3 className="text-center text-3xl leading-8 font-extrabold tracking-tight sm:text-4xl sm:leading-10 lg:leading-none mt-8">
           贊助商
@@ -172,6 +173,7 @@ export default function RouteComp() {
           </a>
         </div>
       </div>
+      */}
 
       <div className="mx-auto max-w-[400px] flex flex-col gap-2 items-center">
         <div className="shadow-lg rounded-lg overflow-hidden bg-white dark:bg-gray-800 dark:text-white max-w-[250px] mx-auto">
