@@ -19,6 +19,7 @@ import { partners } from '../../utils/partners'
 import OpenSourceStats from '~/components/OpenSourceStats'
 import splashLightImg from '~/images/splash-light.png'
 import splashDarkImg from '~/images/splash-dark.png'
+import { Suspense } from 'react'
 
 export const textColors = [
   `text-rose-500`,
@@ -140,7 +141,9 @@ function Index() {
         </div>
         <div className="my-16" />
         <div className="w-fit mx-auto px-4">
-          <OpenSourceStats />
+          <Suspense>
+            <OpenSourceStats />
+          </Suspense>
         </div>
         <div className="my-16" />
         <div className="px-4 lg:max-w-screen-lg md:mx-auto">
