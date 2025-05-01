@@ -70,7 +70,7 @@ async function bytesSignupServerFn({ email }: { email: string }) {
   })
 }
 
-const librariesRouteApi = getRouteApi('/_libraries')
+// const librariesRouteApi = getRouteApi('/_libraries')
 
 function Index() {
   const bytesSignupMutation = useMutation({
@@ -78,7 +78,7 @@ function Index() {
   })
 
   const { randomNumber } = Route.useLoaderData()
-  const { sponsorsPromise } = librariesRouteApi.useLoaderData()
+  // const { sponsorsPromise } = librariesRouteApi.useLoaderData()
   const gradient = sample(gradients, randomNumber)
 
   return (
@@ -347,6 +347,7 @@ function Index() {
             ))}
           </div>
         </div>
+        {/* 
         <hr className="my-16 border-gray-200 dark:border-gray-500/10" />
         <div className={`lg:max-w-screen-lg px-4 mx-auto`}>
           <h3 className={`text-4xl font-light`}>開源贊助商</h3>
@@ -385,6 +386,7 @@ function Index() {
             </p>
           </div>
         </div>
+         */}
         <hr className="my-16 border-gray-200 dark:border-gray-500/10" />
         <LandingPageGad />
         <hr className="my-16 border-gray-200 dark:border-gray-500/10" />
