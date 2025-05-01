@@ -25,12 +25,12 @@ export const Route = createFileRoute('/_libraries/table/$version/')({
   }),
 })
 
-const librariesRouteApi = getRouteApi('/_libraries')
+// const librariesRouteApi = getRouteApi('/_libraries')
 
 const library = getLibrary('table')
 
 export default function TableVersionIndex() {
-  const { sponsorsPromise } = librariesRouteApi.useLoaderData()
+  // const { sponsorsPromise } = librariesRouteApi.useLoaderData()
   const { version } = Route.useParams()
   const branch = getBranch(tableProject, version)
   const [framework, setFramework] = React.useState<Framework>('react')
@@ -196,6 +196,7 @@ export default function TableVersionIndex() {
         </div>
       </div>
 
+      {/* 
       <div className="relative text-lg overflow-hidden">
         <h3 className="text-center text-3xl leading-8 font-extrabold tracking-tight sm:text-4xl sm:leading-10 lg:leading-none mt-8">
           贊助商
@@ -223,6 +224,7 @@ export default function TableVersionIndex() {
           </a>
         </div>
       </div>
+      */}
 
       <LandingPageGad />
 

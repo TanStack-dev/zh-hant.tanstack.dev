@@ -26,12 +26,12 @@ export const Route = createFileRoute('/_libraries/start/$version/')({
   }),
 })
 
-const librariesRouteApi = getRouteApi('/_libraries')
+// const librariesRouteApi = getRouteApi('/_libraries')
 
 const library = getLibrary('start')
 
 export default function VersionIndex() {
-  const { sponsorsPromise } = librariesRouteApi.useLoaderData()
+  // const { sponsorsPromise } = librariesRouteApi.useLoaderData()
   const [isDark, setIsDark] = React.useState(true)
 
   React.useEffect(() => {
@@ -172,6 +172,7 @@ export default function VersionIndex() {
         </div>
       </div>
 
+      {/* 
       <div className="relative text-lg overflow-hidden">
         <h3 className="text-center text-3xl leading-8 font-extrabold tracking-tight sm:text-4xl sm:leading-10 lg:leading-none mt-8">
           贊助商
@@ -199,6 +200,7 @@ export default function VersionIndex() {
           </a>
         </div>
       </div>
+      */}
 
       <LandingPageGad />
 

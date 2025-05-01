@@ -22,11 +22,11 @@ export const Route = createFileRoute('/_libraries/store/$version/')({
   }),
 })
 
-const librariesRouteApi = getRouteApi('/_libraries')
+// const librariesRouteApi = getRouteApi('/_libraries')
 const library = getLibrary('store')
 
 export default function StoreVersionIndex() {
-  const { sponsorsPromise } = librariesRouteApi.useLoaderData()
+  // const { sponsorsPromise } = librariesRouteApi.useLoaderData()
   const { version } = Route.useParams()
 
   const gradientText = `pr-1inline-block text-transparent bg-clip-text bg-gradient-to-r ${storeProject.colorFrom} ${storeProject.colorTo}`
@@ -98,6 +98,7 @@ export default function StoreVersionIndex() {
           </div>
         </div>
 
+        {/*  
         <div className="relative text-lg overflow-hidden">
           <h3 className="text-center text-3xl leading-8 font-extrabold tracking-tight sm:text-4xl sm:leading-10 lg:leading-none mt-8">
             贊助商
@@ -125,6 +126,7 @@ export default function StoreVersionIndex() {
             </a>
           </div>
         </div>
+        */}
 
         <LandingPageGad />
 
