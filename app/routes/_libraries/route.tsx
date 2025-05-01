@@ -21,11 +21,11 @@ import { SearchButton } from '~/components/SearchButton'
 
 export const Route = createFileRoute('/_libraries')({
   staleTime: Infinity,
-  loader: async (ctx) => {
-    return {
-      sponsorsPromise: getSponsorsForSponsorPack(),
-    }
-  },
+  // loader: async (ctx) => {
+  //   return {
+  //     sponsorsPromise: getSponsorsForSponsorPack(),
+  //   }
+  // },
   component: LibrariesLayout,
 })
 
