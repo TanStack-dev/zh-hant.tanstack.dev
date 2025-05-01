@@ -57,28 +57,28 @@ function RouterVersionIndex() {
             lg:text-5xl lg:max-w-2xl"
         >
           <span className="underline decoration-dashed decoration-yellow-500 decoration-3 underline-offset-2">
-            Modern and scalable
+            現代且可擴展
           </span>{' '}
-          routing for React and Solid applications
+          的 React 和 Solid 應用程式路由方案
         </h2>
         <p
           className="text opacity-90 max-w-sm
             lg:text-xl lg:max-w-2xl"
         >
-          A fully type-safe router with built-in data fetching, stale-while
-          revalidate caching and first-class search-param APIs.
+          完全類型安全的路由器，內建數據獲取功能、過時重新驗證緩存和一流的搜索參數
+          API。
         </p>
         <Link
           to="./docs/framework/react/overview"
           className={`py-2 px-4 bg-emerald-500 rounded text-white uppercase font-extrabold`}
         >
-          Get Started
+          開始使用
         </Link>
       </div>
       <LibraryFeatureHighlights featureHighlights={library.featureHighlights} />
       <div className="px-4 lg:max-w-screen-lg md:mx-auto mx-auto">
         <h3 className="text-center text-3xl leading-8 font-extrabold tracking-tight sm:text-4xl sm:leading-10 lg:leading-none mt-8">
-          Partners
+          合作夥伴
         </h3>
         <div className="h-8" />
         <div className={`grid grid-cols-1 gap-6 sm:grid-cols-2`}>
@@ -108,31 +108,31 @@ function RouterVersionIndex() {
       <div className="px-4 sm:px-6 lg:px-8 mx-auto">
         <div className=" sm:text-center pb-16">
           <h3 className="text-3xl text-center mx-auto leading-tight font-extrabold tracking-tight sm:text-4xl lg:leading-none mt-2">
-            Feature Rich and Lightweight
+            功能豐富且輕量級
           </h3>
           <p className="mt-4 text-xl w-3xl mx-auto leading-7 opacity-60">
-            Behold, the obligatory feature-list:
+            看看這些必備功能列表：
           </p>
         </div>
         <div className="grid grid-flow-row grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-10 gap-y-4  mx-auto">
           {[
-            '100% Typesafe',
-            'Parallel Route Loaders',
-            '1st-class Search Param APIs',
-            'Nested/Layout Routes',
-            'Lightweight (12kb)',
-            'Suspense + Transitions',
-            'Strict Navigation',
-            'Auto-completed Paths',
-            'Search Param Schemas',
-            'Search Param Validation',
-            'Search Param Parsing + Serialization',
-            'Search Param Pre/Post Processing',
-            'Structural Sharing',
-            'Automatic Prefetching',
-            'Asynchronous Elements',
-            'Pending Elements',
-            'Error Boundaries',
+            '100% 類型安全',
+            '並行路由加載',
+            '一流的搜索參數 API',
+            '嵌套/佈局路由',
+            '輕量級 (12kb)',
+            'Suspense + 過渡效果',
+            '嚴格導航',
+            '路徑自動完成',
+            '搜索參數模式',
+            '搜索參數驗證',
+            '搜索參數解析 + 序列化',
+            '搜索參數預/後處理',
+            '結構共享',
+            '自動預加載',
+            '非同步元素',
+            '待處理元素',
+            '錯誤邊界',
           ].map((d, i) => {
             return (
               <span key={i} className="flex items-center gap-2">
@@ -145,7 +145,7 @@ function RouterVersionIndex() {
 
       <div className="relative text-lg overflow-hidden">
         <h3 className="text-center text-3xl leading-8 font-extrabold tracking-tight sm:text-4xl sm:leading-10 lg:leading-none mt-8">
-          Sponsors
+          贊助商
         </h3>
         <div
           className="my-4 flex flex-wrap mx-auto max-w-screen-lg w-full"
@@ -166,7 +166,7 @@ function RouterVersionIndex() {
             href="https://github.com/sponsors/tannerlinsley"
             className="inline-block bg-green-500 px-4 py-2 text-xl mx-auto leading-tight font-extrabold tracking-tight text-white rounded-full"
           >
-            Become a Sponsor!
+            成為贊助商！
           </a>
         </div>
       </div>
@@ -177,10 +177,10 @@ function RouterVersionIndex() {
         <div className="flex flex-col gap-4">
           <div className="px-4 sm:px-6 lg:px-8 mx-auto max-w-3xl sm:text-center">
             <h3 className="text-3xl text-center leading-8 font-extrabold tracking-tight sm:text-4xl sm:leading-10 lg:leading-none mt-2">
-              Take it for a spin!
+              親自試用！
             </h3>
             <p className="my-4 text-xl leading-7  text-gray-600">
-              Create a route, pop in a Router, and start slingin' some code!
+              創建路由，放置一個 Router，然後開始編寫代碼！
             </p>
             {/* <div className="flex flex-wrap gap-2 justify-center">
             {(
@@ -247,17 +247,15 @@ function RouterVersionIndex() {
 
       <div className="flex flex-col gap-4 items-center">
         <div className="font-extrabold text-xl lg:text-2xl">
-          Wow, you've come a long way!
+          哇，您已經走了很長一段路！
         </div>
-        <div className="italic font-sm opacity-70">
-          Only one thing left to do...
-        </div>
+        <div className="italic font-sm opacity-70">只剩下一件事要做...</div>
         <div>
           <Link
             to="./docs/framework/react/overview"
             className={`inline-block py-2 px-4 bg-emerald-500 rounded text-white uppercase font-extrabold`}
           >
-            Get Started!
+            開始使用！
           </Link>
         </div>
       </div>

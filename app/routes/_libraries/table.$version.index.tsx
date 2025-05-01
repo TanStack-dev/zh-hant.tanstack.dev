@@ -57,23 +57,23 @@ export default function TableVersionIndex() {
             lg:text-5xl lg:max-w-2xl"
         >
           <span className="underline decoration-dashed decoration-yellow-500 decoration-3 underline-offset-2">
-            Headless
+            無頭式
           </span>{' '}
-          UI for building powerful tables & datagrids
+          構建強大表格和數據網格的 UI 工具
         </h2>
         <p
           className="text opacity-90 max-w-sm
             lg:text-xl lg:max-w-2xl"
         >
-          Supercharge your tables or build a datagrid from scratch for TS/JS,
-          React, Vue, Solid, Svelte & Lit while retaining 100% control over
-          markup and styles.
+          為 TS/JS、React、Vue、Solid、Svelte 和 Lit
+          提供超強表格功能，或從頭開始構建數據網格，同時保持對標記和樣式的 100%
+          控制。
         </p>
         <Link
           to="./docs/introduction/"
           className={`py-2 px-4 bg-blue-500 rounded text-white uppercase font-extrabold`}
         >
-          Get Started
+          開始使用
         </Link>
       </div>
 
@@ -82,38 +82,37 @@ export default function TableVersionIndex() {
       <div className="px-4 sm:px-6 lg:px-8 mx-auto">
         <div className=" sm:text-center pb-16">
           <h3 className="text-3xl text-center mx-auto leading-tight font-extrabold tracking-tight sm:text-4xl lg:leading-none mt-2">
-            Framework Agnostic & Feature Rich
+            框架無關 & 功能豐富
           </h3>
           <p className="mt-4 text-xl max-w-3xl mx-auto leading-7 opacity-60">
-            TanStack Table's API and engine are highly modular and
-            framework-independent while still prioritizing ergonomics. Behold,
-            the obligatory feature-list:
+            TanStack Table 的 API
+            和引擎高度模塊化且獨立於框架，同時仍然優先考慮人體工程學。看看這些必備功能列表：
           </p>
         </div>
         <div className="grid grid-flow-row grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-10 gap-y-4  mx-auto">
           {[
-            'Lightweight (10 - 15kb)',
-            'Tree-Shaking',
-            'Headless',
-            'Cell Formatters',
-            'Auto-managed internal state',
-            'Opt-in fully controlled state',
-            'Sorting',
-            'Multi Sort',
-            'Global Filters',
-            'Columns Filters',
-            'Pagination',
-            'Row Grouping',
-            'Aggregation',
-            'Row Selection',
-            'Row Expansion',
-            'Column Ordering',
-            'Column Visibility',
-            'Column Resizing',
-            'Virtualizable',
-            'Server-side/external Data',
-            'Nested/Grouped Headers',
-            'Footers',
+            '輕量級 (10 - 15kb)',
+            '支持 Tree-Shaking',
+            '無頭式設計',
+            '單元格格式化',
+            '自動管理內部狀態',
+            '可選的完全受控狀態',
+            '排序功能',
+            '多重排序',
+            '全局過濾器',
+            '列過濾器',
+            '分頁功能',
+            '行分組',
+            '聚合功能',
+            '行選擇',
+            '行展開',
+            '列排序',
+            '列可見性',
+            '列大小調整',
+            '可虛擬化',
+            '伺服器端/外部數據',
+            '嵌套/分組標題',
+            '頁腳',
           ].map((d, i) => {
             return (
               <span key={i} className="flex items-center gap-2">
@@ -126,7 +125,7 @@ export default function TableVersionIndex() {
 
       <div>
         <div className="uppercase tracking-wider text-sm font-semibold text-center text-gray-400 mb-3">
-          Trusted in Production by
+          受到生產環境信賴
         </div>
         {/* @ts-ignore */}
         <marquee scrollamount="2">
@@ -170,7 +169,7 @@ export default function TableVersionIndex() {
 
       <div className="px-4 lg:max-w-screen-lg md:mx-auto mx-auto">
         <h3 className="text-center text-3xl leading-8 font-extrabold tracking-tight sm:text-4xl sm:leading-10 lg:leading-none mt-8">
-          Partners
+          合作夥伴
         </h3>
         <div className="h-8" />
         <div className={`grid grid-cols-1 gap-6 max-w-[400px]`}>
@@ -199,7 +198,7 @@ export default function TableVersionIndex() {
 
       <div className="relative text-lg overflow-hidden">
         <h3 className="text-center text-3xl leading-8 font-extrabold tracking-tight sm:text-4xl sm:leading-10 lg:leading-none mt-8">
-          Sponsors
+          贊助商
         </h3>
         <div
           className="my-4 flex flex-wrap mx-auto max-w-screen-lg"
@@ -220,7 +219,7 @@ export default function TableVersionIndex() {
             href="https://github.com/sponsors/tannerlinsley"
             className="inline-block bg-green-500 px-4 py-2 text-xl mx-auto leading-tight font-extrabold tracking-tight text-white rounded-full"
           >
-            Become a Sponsor!
+            成為贊助商！
           </a>
         </div>
       </div>
@@ -230,11 +229,10 @@ export default function TableVersionIndex() {
       <div className="flex flex-col gap-4">
         <div className="px-4 sm:px-6 lg:px-8  mx-auto container max-w-3xl sm:text-center">
           <h3 className="text-3xl text-center leading-8 font-extrabold tracking-tight sm:text-4xl sm:leading-10 lg:leading-none mt-2">
-            Take it for a spin!
+            親自體驗！
           </h3>
           <p className="my-4 text-xl leading-7  text-gray-600">
-            With some basic styles, some table markup and few columns, you're
-            already well on your way to creating a drop-dead powerful table.
+            只需一些基本樣式、一些表格標記和幾個列，您已經在創建一個極其強大的表格的道路上了。
           </p>
           <div className="flex flex-wrap gap-2 justify-center">
             {(
@@ -287,11 +285,9 @@ export default function TableVersionIndex() {
 
       <div className="flex flex-col gap-4 items-center">
         <div className="font-extrabold text-xl lg:text-2xl">
-          Wow, you've come a long way!
+          哇，您已經走了很長一段路！
         </div>
-        <div className="italic font-sm opacity-70">
-          Only one thing left to do...
-        </div>
+        <div className="italic font-sm opacity-70">只剩下一件事要做...</div>
         <div>
           <Link
             to="/$libraryId/$version/docs/$"
@@ -302,7 +298,7 @@ export default function TableVersionIndex() {
             }}
             className={`inline-block py-2 px-4 bg-teal-500 rounded text-white uppercase font-extrabold`}
           >
-            Get Started!
+            開始使用！
           </Link>
         </div>
       </div>

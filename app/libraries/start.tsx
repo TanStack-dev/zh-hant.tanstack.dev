@@ -6,7 +6,7 @@ import { PiRocketLaunchDuotone, PiTreeStructureBold } from 'react-icons/pi'
 import { TbServerBolt } from 'react-icons/tb'
 import { twMerge } from 'tailwind-merge'
 
-const repo = 'tanstack/router'
+const repo = 'tanstack-dev/router'
 
 const textStyles = 'text-cyan-600 dark:text-cyan-500'
 
@@ -14,9 +14,10 @@ export const startProject = {
   id: 'start',
   name: 'TanStack Start',
   cardStyles: `shadow-xl shadow-cyan-500/20 dark:shadow-lg dark:shadow-cyan-500/30 text-cyan-500 dark:text-white-400 border-2 border-transparent hover:border-current`,
+  docsRoot: 'docs/zh-hant',
   to: '/start',
-  tagline: `Full-stack React Framework powered by TanStack Router`,
-  description: `Full-document SSR, Streaming, Server Functions, bundling and more, powered by TanStack Router and Vite - Ready to deploy to your favorite hosting provider.`,
+  tagline: `由 TanStack Router 驅動的全棧 React 框架`,
+  description: `由 TanStack Router 和 Vite 驅動的全文檔 SSR、流式傳輸、伺服器功能和更多功能 - 準備部署到您喜歡的託管提供商。`,
   bgStyle: 'bg-cyan-500',
   textStyle: 'text-cyan-500',
   badge: 'beta',
@@ -24,7 +25,7 @@ export const startProject = {
   latestBranch: 'main',
   latestVersion: 'v0',
   availableVersions: ['v0'],
-  docsRoot: 'docs/start',
+  docsRoot: 'docs/start/zh-hant',
   colorFrom: 'from-teal-500',
   colorTo: 'to-cyan-500',
   textColor: 'text-cyan-600',
@@ -35,12 +36,12 @@ export const startProject = {
   menu: [
     {
       icon: <VscPreview />,
-      label: 'Examples',
+      label: '範例',
       to: '/start/latest/docs/framework/react/examples/start-basic',
     },
     {
       icon: <BiBookAlt />,
-      label: 'Docs',
+      label: '文檔',
       to: '/start/latest/docs/framework/react/overview',
     },
     {
@@ -51,7 +52,7 @@ export const startProject = {
   ],
   featureHighlights: [
     {
-      title: 'Enterprise-Grade Routing',
+      title: '企業級路由',
       icon: (
         <PiTreeStructureBold
           className={twMerge('motion-safe:animate-pulse', textStyles)}
@@ -63,19 +64,18 @@ export const startProject = {
       ),
       description: (
         <div>
-          Built on TanStack Router, Start comes pre-packed with a{' '}
+          基於 TanStack Router 構建，Start 預先配備了{' '}
           <span className={twMerge('font-semibold', textStyles)}>
-            fully type-safe and powerfully-unmatched routing system
+            完全類型安全且功能強大無比的路由系統
           </span>{' '}
-          that is designed to handle the beefiest of full-stack routing
-          requirements with ease. Start builds on top of Router's fully inferred
-          type safety to also provide type-safe full-stack APIs that keep you in
-          the fast lane.
+          ，專為輕鬆處理最複雜的全棧路由需求而設計。Start 在 Router
+          的完全推斷類型安全基礎上進一步提供類型安全的全棧
+          API，讓您保持在快速開發通道。
         </div>
       ),
     },
     {
-      title: 'SSR, Streaming and Server RPCs',
+      title: 'SSR、流式傳輸和伺服器 RPC',
       icon: (
         <TbServerBolt
           className={twMerge('motion-safe:animate-ping', textStyles)}
@@ -87,18 +87,17 @@ export const startProject = {
       ),
       description: (
         <div>
-          Who said rich and interactive applications can't have it all? TanStack
-          Start includes powerful capabilities for{' '}
+          誰說豐富且互動的應用程式不能兼顧所有功能？TanStack Start
+          包含強大的功能，支持{' '}
           <span className={twMerge('font-semibold', textStyles)}>
-            full-document SSR, streaming, server functions and RPCs
+            全文檔 SSR、流式傳輸、伺服器功能和 RPC
           </span>
-          . No more choosing between server-side rendering and top-class
-          client-side interactivity. Command the server as you see fit.
+          。不再需要在伺服器端渲染和頂級客戶端交互性之間做出選擇。按照您的需求指揮伺服器。
         </div>
       ),
     },
     {
-      title: 'Client-Side First, 100% Server Capable',
+      title: '客戶端優先，100% 伺服器能力',
       icon: (
         <FaYinYang
           className={twMerge('motion-safe:animate-spin', textStyles)}
@@ -110,22 +109,21 @@ export const startProject = {
       ),
       description: (
         <div>
-          While other frameworks continue to compromise on the client-side
-          application experience we've cultivated as a front-end community over
-          the years, TanStack Start stays true to the{' '}
+          當其他框架繼續在我們多年來作為前端社區培養的客戶端應用體驗上做出妥協時，TanStack
+          Start 保持忠於{' '}
           <span className={twMerge('font-semibold', textStyles)}>
-            client-side first developer experience,
+            客戶端優先的開發者體驗，
           </span>{' '}
-          while providing a{' '}
+          同時提供{' '}
           <span className={twMerge('font-semibold', textStyles)}>
-            full-featured server-side capable system
+            功能齊全的伺服器端系統
           </span>{' '}
-          that won't make you compromise on user experience.
+          ，不會讓您在用戶體驗上做出妥協。
         </div>
       ),
     },
     {
-      title: 'Deploy Anywhere',
+      title: '部署到任何地方',
       icon: (
         <PiRocketLaunchDuotone
           className={twMerge('motion-safe:animate-bounce', textStyles)}
@@ -137,13 +135,12 @@ export const startProject = {
       ),
       description: (
         <div>
-          TanStack Start can be{' '}
+          TanStack Start 可以{' '}
           <span className={twMerge('font-semibold', textStyles)}>
-            deployed anywhere JS can run
+            部署到任何能運行 JS 的地方
           </span>
-          . Whether you're hosting on a traditional server, a serverless
-          platform, or even a CDN, Start seamlessly builds, bundles and deploys
-          your application with ease.
+          。無論您是在傳統伺服器上託管，還是在無伺服器平台，甚至是在 CDN
+          上，Start 都能無縫地構建、打包和部署您的應用程式。
         </div>
       ),
     },

@@ -48,27 +48,24 @@ export default function PacerVersionIndex() {
             lg:text-5xl lg:max-w-2xl"
           >
             <span className="underline decoration-dashed decoration-gray-500 decoration-3 underline-offset-2">
-              Framework agnostic
+              框架無關
             </span>{' '}
-            type-safe rate-limiting and queueing utilities
+            類型安全的速率限制和隊列工具
           </h2>
           <p
             className="text opacity-90 max-w-[500px]
             lg:text-xl lg:max-w-[800px]"
           >
-            Take control of your application's timing with TanStack Pacer's{' '}
-            <strong>rate limiting, throttling, and debouncing utilities</strong>
-            . Manage complex async workflows using{' '}
-            <strong>intelligent queuing and concurrency controls</strong> while
-            maintaining full control with built-in pause, resume, and cancel
-            capabilities.
+            使用 TanStack Pacer 的 <strong>速率限制、節流和防抖工具</strong>
+            控制您的應用程序的時序。使用 <strong>智能隊列和並發控制</strong>
+            來管理複雜的異步工作流程，同時通過內建的暫停、恢復和取消功能保持完全控制。
           </p>
           <Link
             to="/$libraryId/$version/docs"
             params={{ libraryId: library.id, version }}
             className={`py-2 px-4 bg-stone-600 text-white rounded uppercase font-extrabold`}
           >
-            Get Started
+            開始使用
           </Link>
         </div>
         <LibraryFeatureHighlights
@@ -78,31 +75,30 @@ export default function PacerVersionIndex() {
         <div className="px-4 sm:px-6 lg:px-8 mx-auto">
           <div className=" sm:text-center pb-16">
             <h3 className="text-3xl text-center mx-auto leading-tight font-extrabold tracking-tight sm:text-4xl lg:leading-none mt-2">
-              Framework Agnostic & Feature Rich
+              框架無關與功能豐富
             </h3>
             <p className="mt-4 text-xl max-w-3xl mx-auto leading-7 opacity-60">
-              TanStack Pacer's API is highly modular and framework-independent
-              while still prioritizing ergonomics. Behold, the obligatory
-              feature-list:
+              TanStack Pacer 的 API
+              高度模塊化且獨立於框架，同時仍然優先考慮易用性。看看這些功能列表：
             </p>
           </div>
           <div className="grid grid-flow-row grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-10 gap-y-4 mx-auto">
             {[
-              'Lightweight',
-              'Tree-Shaking',
-              'Type-Safe',
-              'Rate Limiting',
-              'Throttling',
-              'Debouncing',
-              'Queueing',
-              'LIFO/FIFO/Dequeue Ordering',
-              'Concurrency Control',
-              'Queue Prioritization',
-              'Pause/Resume Controls',
-              'Cancellation',
-              'Abort Controller Support',
-              'Promise Integration',
-              'Multiple Layers of Abstraction',
+              '輕量級',
+              '支持 Tree-Shaking',
+              '類型安全',
+              '速率限制',
+              '節流功能',
+              '防抖功能',
+              '隊列管理',
+              'LIFO/FIFO/雙向隊列排序',
+              '並發控制',
+              '隊列優先級',
+              '暫停/恢復控制',
+              '取消功能',
+              'Abort Controller 支持',
+              'Promise 整合',
+              '多層抽象',
             ].map((d, i) => {
               return (
                 <span key={i} className="flex items-center gap-2">
@@ -115,7 +111,7 @@ export default function PacerVersionIndex() {
 
         <div className="px-4 lg:max-w-screen-lg md:mx-auto mx-auto max-w-full">
           <h3 className="text-center text-3xl leading-8 font-extrabold tracking-tight sm:text-4xl sm:leading-10 lg:leading-none mt-8">
-            Partners
+            合作夥伴
           </h3>
           <div className="h-8" />
           <div className={`w-[500px] max-w-full`}>
@@ -144,7 +140,7 @@ export default function PacerVersionIndex() {
 
         <div className="relative text-lg overflow-hidden">
           <h3 className="text-center text-3xl leading-8 font-extrabold tracking-tight sm:text-4xl sm:leading-10 lg:leading-none mt-8">
-            Sponsors
+            贊助商
           </h3>
           <div
             className="my-4 flex flex-wrap mx-auto max-w-screen-lg"
@@ -165,7 +161,7 @@ export default function PacerVersionIndex() {
               href="https://github.com/sponsors/tannerlinsley"
               className="inline-block bg-green-500 px-4 py-2 text-xl mx-auto leading-tight font-extrabold tracking-tight text-white rounded-full"
             >
-              Become a Sponsor!
+              成為贊助商！
             </a>
           </div>
         </div>
@@ -220,18 +216,16 @@ export default function PacerVersionIndex() {
 
         <div className="flex flex-col gap-4 items-center">
           <div className="font-extrabold text-xl lg:text-2xl">
-            Wow, you've come a long way!
+            哇，您已經走了很長一段路！
           </div>
-          <div className="italic font-sm opacity-70">
-            Only one thing left to do...
-          </div>
+          <div className="italic font-sm opacity-70">只剩下一件事要做...</div>
           <div>
             <Link
               to="/$libraryId/$version/docs"
               params={{ libraryId: library.id, version }}
               className={`inline-block py-2 px-4 bg-stone-700 rounded text-white uppercase font-extrabold`}
             >
-              Get Started!
+              開始使用！
             </Link>
           </div>
         </div>

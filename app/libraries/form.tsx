@@ -4,7 +4,7 @@ import { FaGithub, FaBolt, FaCogs } from 'react-icons/fa'
 import { BiBookAlt } from 'react-icons/bi'
 import { twMerge } from 'tailwind-merge'
 
-const repo = 'tanstack/form'
+const repo = 'tanstack-dev/form'
 
 const textStyles = 'text-yellow-600 dark:text-yellow-300'
 
@@ -12,9 +12,10 @@ export const formProject = {
   id: 'form',
   name: 'TanStack Form',
   cardStyles: `shadow-xl shadow-yellow-700/20 dark:shadow-lg dark:shadow-yellow-500/30 text-yellow-500 border-2 border-transparent hover:border-current`,
+  docsRoot: 'docs/zh-hant',
   to: '/form',
-  tagline: `Headless UI for building performant and type-safe forms`,
-  description: `Headless, performant, and type-safe form state management for TS/JS, React, Vue, Angular, Solid, Lit and Svelte.`,
+  tagline: `用於構建高效且類型安全表單的無界面 UI`,
+  description: `適用於 TS/JS、React、Vue、Angular、Solid、Lit 和 Svelte 的無界面、高效且類型安全的表單狀態管理。`,
   ogImage: 'https://github.com/tanstack/form/raw/main/media/repo-header.png',
   badge: 'new',
   bgStyle: 'bg-yellow-500',
@@ -31,12 +32,12 @@ export const formProject = {
   menu: [
     {
       icon: <VscPreview />,
-      label: 'Examples',
+      label: '範例',
       to: '/form/latest/docs/framework/react/examples/simple',
     },
     {
       icon: <BiBookAlt />,
-      label: 'Docs',
+      label: '文檔',
       to: '/form/latest/docs',
     },
     {
@@ -47,52 +48,44 @@ export const formProject = {
   ],
   featureHighlights: [
     {
-      title: 'First-Class TypeScript Support',
+      title: '一流的 TypeScript 支援',
       icon: <VscWand className="text-yellow-400" />,
       description: (
         <div>
-          TanStack Form touts first-class TypeScript support with outstanding
-          autocompletion, excellent generic throughput and inferred types
-          everywhere possible.{' '}
+          TanStack Form 擁有一流的 TypeScript
+          支援，提供出色的自動完成功能、優秀的泛型傳遞和處處推斷類型。{' '}
           <span className={twMerge('font-semibold', textStyles)}>
-            This results in fewer runtime errors, increased code
-            maintainability, and a smoother development experience
+            這可減少運行時錯誤，提高代碼可維護性，並帶來更順暢的開發體驗
           </span>{' '}
-          to help you confidently build robust and type-safe form solutions that
-          scale.
+          ，幫助您自信地構建健壯且類型安全的表單解決方案，並且能夠擴展。
         </div>
       ),
     },
     {
-      title: 'Headless and Framework Agnostic',
+      title: '無界面且框架無關',
       icon: <FaBolt className="text-yellow-500" />,
       description: (
         <div>
-          Form's headless and framework agnostic approach ensures maximum
-          flexibility and broad compatibility with many front-end frameworks, or
-          no framework at all. By both supplying and encouraging a headless
-          approach to your forms, building custom reusable form components
-          tailored to your application's needs{' '}
+          Form
+          的無界面和框架無關的方法確保了最大的靈活性和與許多前端框架的廣泛兼容性，甚至可以完全不使用框架。通過提供和鼓勵對表單使用無界面的方法，構建針對應用需求定制的可重用表單組件{' '}
           <span className={twMerge('font-semibold', textStyles)}>
-            requires little abstraction and keeps your code modular, simple and
-            composable.
+            只需很少的抽象，並保持代碼模塊化、簡潔和可組合。
           </span>
         </div>
       ),
     },
     {
-      title: 'Granular Reactive Performance',
+      title: '粒度響應式性能',
       icon: <FaCogs className="text-amber-500" />,
       description: (
         <div>
-          When it comes to performance, TanStack Form delivers amazing speed and
-          control, but without the cruft, boilerplate, or abstractions. With
-          granularly reactive APIs at its core,{' '}
+          在性能方面，TanStack Form
+          提供了令人驚嘆的速度和控制，但沒有繁瑣、樣板代碼或抽象。憑藉其核心的粒度響應式
+          API，{' '}
           <span className={twMerge('font-semibold', textStyles)}>
-            only relevant components are updated when the form state changes.
+            當表單狀態變化時，只有相關組件會更新。
           </span>{' '}
-          The end result? A faster UI, happy users, and zero worries about
-          performance.
+          最終結果？更快的 UI，滿意的用戶，以及對性能零顧慮。
         </div>
       ),
     },

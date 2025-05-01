@@ -60,7 +60,7 @@ export default function VersionIndex() {
             'leading-none whitespace-nowrap'
           )}
         >
-          STATUS: BETA
+          狀態: BETA
           {/* {version === 'latest' ? latestVersion : version} */}
         </div>
         {/* </div> */}
@@ -69,47 +69,46 @@ export default function VersionIndex() {
             md:text-3xl
             lg:text-5xl lg:max-w-2xl"
         >
-          Full-stack React and Solid framework{' '}
+          全堆疊 React 和 Solid 框架{' '}
           <span className="underline decoration-dashed decoration-yellow-500 decoration-3 underline-offset-2">
-            powered by TanStack Router
+            由 TanStack Router 提供支持
           </span>{' '}
         </h2>
         <p
           className="text opacity-90 max-w-[500px]
             lg:text-xl lg:max-w-[600px]"
         >
-          SSR, Streaming, Server Functions, API Routes, bundling and more
-          powered by <strong>TanStack Router</strong> and <strong>Vite</strong>.
-          Ready to deploy to your favorite hosting provider.
+          由 <strong>TanStack Router</strong> 和 <strong>Vite</strong> 驅動的
+          SSR、流式處理、伺服器功能、API 路由、打包和更多功能。
+          已準備好部署到您喜歡的託管提供商。
         </p>
         <div className="flex justify-center gap-4 flex-wrap">
           <Link
             to="./docs/framework/react/quick-start#impatient"
             className={`py-2 px-4 bg-transparent text-cyan-600 dark:text-cyan-400 border-2 border-cyan-500 dark:border-cyan-600 rounded uppercase font-extrabold`}
           >
-            Try it in 60 seconds
+            60 秒內嘗試
           </Link>
           <Link
             to="./docs/framework/react/overview"
             className={`py-2 px-4 bg-cyan-500 dark:bg-cyan-600 rounded text-white uppercase font-extrabold flex items-center`}
           >
-            Get Started
+            開始使用
           </Link>
         </div>
       </div>
       <LibraryFeatureHighlights featureHighlights={library.featureHighlights} />
       <div className="space-y-8 px-4">
         <div className="font-black text-3xl mr-1 text-center">
-          When can I use it?
+          何時可以使用它？
         </div>
         <div className="max-w-full p-8 w-[800px] mx-auto leading-loose space-y-4 bg-white dark:bg-black/40 rounded-xl shadow-xl shadow-black/10">
           <div>
-            You can use <strong>TanStack Start BETA</strong> today! Although
-            currently in active development, we do not expect any more breaking
-            changes. We invite you to provide feedback to help us on the journey
-            to 1.0! If you choose to ship a BETA Start app to production, we
-            recommend locking your dependencies to a specific version and
-            keeping up with the latest releases.
+            您現在就可以使用 <strong>TanStack Start BETA</strong>
+            ！雖然目前仍在積極開發中，但我們預計不會有更多重大變更。
+            我們邀請您提供反饋，幫助我們邁向 1.0 版本的旅程！如果您選擇將 BETA
+            版 Start 應用部署到生產環境，
+            我們建議將您的依賴項鎖定到特定版本，並隨時關注最新版本。
           </div>
         </div>
         <div className="grid items-center gap-2 justify-center grid-cols-2 w-[600px] max-w-full mx-auto">
@@ -117,189 +116,36 @@ export default function VersionIndex() {
             to="/start/latest/docs/framework/react/examples/start-basic"
             className={`flex items-center gap-2 py-2 px-4 bg-cyan-900 rounded text-white uppercase font-extrabold`}
           >
-            <VscPreview /> See an Example
+            <VscPreview /> 查看範例
           </Link>
           <Link
             to="/start/latest/docs/framework/react/overview"
             className={`flex items-center gap-2 py-2 px-4 bg-cyan-800 rounded text-white uppercase font-extrabold`}
           >
-            <FaBook /> Try the BETA
+            <FaBook /> 嘗試 BETA 版
           </Link>
           <a
             href={`https://github.com/tanstack/tanstack.com`}
             className={`flex items-center gap-2 py-2 px-4 bg-cyan-700 rounded text-white uppercase font-extrabold`}
           >
-            <FaGithub /> TanStack.com Source
+            <FaGithub /> TanStack.com 原始碼
           </a>
           <a
             href={`https://twitter.com/intent/post?text=${encodeURIComponent(
-              `TanStack Start is in BETA! It's a new full-stack React framework from @Tan_Stack and you can check it out at https://tanstack.com/start/`
+              `TanStack Start 已進入 BETA 階段！這是 @Tan_Stack 推出的新全堆疊 React 框架，您可以在 https://tanstack.com/start/ 查看`
             )}`}
             target="_blank"
             className={`flex items-center gap-2 py-2 px-4 bg-cyan-500 rounded text-white uppercase font-extrabold`}
             rel="noreferrer"
           >
-            <FaTwitter /> Tweet about it!
+            <FaTwitter /> 分享到推特！
           </a>{' '}
         </div>
       </div>
 
-      {/* <div
-        className="text-lg flex flex-col gap-12 p-8 max-w-[1200px] mx-auto
-                        md:flex-row"
-      >
-        <div className="flex-1 flex flex-col gap-8 items-center">
-          <VscWand className="text-cyan-500 text-6xl" />
-          <div className="flex flex-col gap-4">
-            <h3 className="uppercase text-center text-xl font-black">
-              Built on TanStack Router
-            </h3>
-            <p className="text-sm text-gray-800 dark:text-gray-200 leading-6">
-              Writing your data fetching logic by hand is over. Tell TanStack
-              Query where to get your data and how fresh you need it to be and
-              the rest is automatic. It handles{' '}
-              <span className="font-semibold text-cyan-700 dark:text-cyan-400">
-                caching, background updates and stale data out of the box with
-                zero-configuration
-              </span>
-              .
-            </p>
-          </div>
-        </div>
-        <div className="flex-1 flex flex-col gap-8 items-center">
-          <div className="text-center">
-            <FaBolt className="text-sky-600 text-6xl" />
-          </div>
-          <div className="flex flex-col gap-4">
-            <h3 className="uppercase text-center text-xl font-black">
-              Simple & Familiar
-            </h3>
-            <p className="text-sm text-gray-800 dark:text-gray-200 leading-6">
-              If you know how to work with promises or async/await, then you
-              already know how to use TanStack Query. There's{' '}
-              <span className="font-semibold text-sky-700 dark:text-sky-400">
-                no global state to manage, reducers, normalization systems or
-                heavy configurations to understand
-              </span>
-              . Simply pass a function that resolves your data (or throws an
-              error) and the rest is history.
-            </p>
-          </div>
-        </div>
-        <div className="flex-1 flex flex-col gap-8 items-center">
-          <div className="text-center">
-            <FaCogs className="text-blue-500 text-6xl" />
-          </div>
-          <div className="flex flex-col gap-4">
-            <h3 className="uppercase text-center text-xl font-black">
-              Extensible
-            </h3>
-            <p className="text-sm text-gray-800 dark:text-gray-200 leading-6">
-              TanStack Query is configurable down to each observer instance of a
-              query with knobs and options to fit every use-case. It comes wired
-              up with{' '}
-              <span className="font-semibold text-blue-700 dark:text-blue-400">
-                dedicated devtools, infinite-loading APIs, and first class
-                mutation tools that make updating your data a breeze
-              </span>
-              . Don't worry though, everything is pre-configured for success!
-            </p>
-          </div>
-        </div>
-      </div> */}
-
-      {/* <div className="px-4 sm:px-6 lg:px-8 mx-auto">
-        <div className=" sm:text-center pb-16">
-          <h3 className="text-3xl text-center mx-auto leading-tight font-extrabold tracking-tight sm:text-4xl lg:leading-none mt-2">
-            No dependencies. All the Features.
-          </h3>
-          <p className="mt-4 text-xl max-w-3xl mx-auto leading-7 opacity-60">
-            With zero dependencies, TanStack Query is extremely lean given the
-            dense feature set it provides. From weekend hobbies all the way to
-            enterprise e-commerce systems (Yes, I'm lookin' at you Walmart! 😉),
-            TanStack Query is the battle-hardened tool to help you succeed at
-            the speed of your creativity.
-          </p>
-        </div>
-        <div className="grid grid-flow-row grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-10 gap-y-4  mx-auto">
-          {[
-            'Backend agnostic',
-            'Dedicated Devtools',
-            'Auto Caching',
-            'Auto Refetching',
-            'Window Focus Refetching',
-            'Polling/Realtime Queries',
-            'Parallel Queries',
-            'Dependent Queries',
-            'Mutations API',
-            'Automatic Garbage Collection',
-            'Paginated/Cursor Queries',
-            'Load-More/Infinite Scroll Queries',
-            'Scroll Recovery',
-            'Request Cancellation',
-            'Suspense Ready!',
-            'Render-as-you-fetch',
-            'Prefetching',
-            'Variable-length Parallel Queries',
-            'Offline Support',
-            'SSR Support',
-            'Data Selectors',
-          ].map((d, i) => {
-            return (
-              <span key={i} className="flex items-center gap-2">
-                <FaCheckCircle className="text-green-500 " /> {d}
-              </span>
-            )
-          })}
-        </div>
-      </div> */}
-
-      {/* <div>
-        <div className="uppercase tracking-wider text-sm font-semibold text-center text-gray-400 mb-3">
-          Trusted in Production by
-        </div>
-        <marquee scrollamount="2">
-          <div className="flex gap-2 items-center text-3xl font-bold ml-[-100%]">
-            {(new Array(4) as string[])
-              .fill('')
-              .reduce(
-                (all) => [...all, ...all],
-                [
-                  'Google',
-                  'Walmart',
-                  'Facebook',
-                  'PayPal',
-                  'Amazon',
-                  'American Express',
-                  'Microsoft',
-                  'Target',
-                  'Ebay',
-                  'Autodesk',
-                  'CarFAX',
-                  'Docusign',
-                  'HP',
-                  'MLB',
-                  'Volvo',
-                  'Ocado',
-                  'UPC.ch',
-                  'EFI.com',
-                  'ReactBricks',
-                  'Nozzle.io',
-                  'Uber',
-                ]
-              )
-              .map((d, i) => (
-                <span key={i} className="opacity-70 even:opacity-40">
-                  {d}
-                </span>
-              ))}
-          </div>
-        </marquee>
-      </div> */}
-
       <div className="px-4 lg:max-w-screen-lg md:mx-auto mx-auto">
         <h3 className="text-center text-3xl leading-8 font-extrabold tracking-tight sm:text-4xl sm:leading-10 lg:leading-none mt-8">
-          Partners
+          合作夥伴
         </h3>
         <div className="h-8" />
         <div className={`grid grid-cols-1 gap-6 sm:grid-cols-2`}>
@@ -328,7 +174,7 @@ export default function VersionIndex() {
 
       <div className="relative text-lg overflow-hidden">
         <h3 className="text-center text-3xl leading-8 font-extrabold tracking-tight sm:text-4xl sm:leading-10 lg:leading-none mt-8">
-          Sponsors
+          贊助商
         </h3>
         <div
           className="my-4 flex flex-wrap mx-auto max-w-screen-lg"
@@ -349,100 +195,24 @@ export default function VersionIndex() {
             href="https://github.com/sponsors/tannerlinsley"
             className="inline-block bg-green-500 px-4 py-2 text-xl mx-auto leading-tight font-extrabold tracking-tight text-white rounded-full"
           >
-            Become a Sponsor!
+            成為贊助商！
           </a>
         </div>
       </div>
 
       <LandingPageGad />
 
-      {/* <div className="flex flex-col gap-4">
-        <div className="px-4 sm:px-6 lg:px-8  mx-auto max-w-3xl sm:text-center">
-          <h3 className="text-3xl text-center leading-8 font-extrabold tracking-tight sm:text-4xl sm:leading-10 lg:leading-none mt-2">
-            Less code, fewer edge cases.
-          </h3>
-          <p className="my-4 text-xl leading-7  text-gray-600">
-            Instead of writing reducers, caching logic, timers, retry logic,
-            complex async/await scripting (I could keep going...), you literally
-            write a tiny fraction of the code you normally would. You will be
-            surprised at how little code you're writing or how much code you're
-            deleting when you use TanStack Query. Try it out with one of the
-            examples below!
-          </p>
-          <div className="flex flex-wrap gap-2 justify-center">
-            {(
-              [
-                { label: 'Angular', value: 'angular' },
-                { label: 'React', value: 'react' },
-                { label: 'Solid', value: 'solid' },
-                { label: 'Svelte', value: 'svelte' },
-                { label: 'Vue', value: 'vue' },
-              ] as const
-            ).map((item) => (
-              <button
-                key={item.value}
-                className={`inline-block py-2 px-4 rounded text-white uppercase font-extrabold ${
-                  item.value === framework
-                    ? 'bg-cyan-500'
-                    : 'bg-gray-300 dark:bg-gray-700 hover:bg-cyan-300'
-                }`}
-                onClick={() => setFramework(item.value)}
-              >
-                {item.label}
-              </button>
-            ))}
-          </div>
-        </div>
-      </div> */}
-
-      {/* {[''].includes(framework) ? (
-        <div className="px-2">
-          <div className="p-8 text-center text-lg w-full max-w-screen-lg mx-auto bg-black text-white rounded-xl">
-            Looking for the <strong>@tanstack/{framework}-query</strong>{' '}
-            example? We could use your help to build the{' '}
-            <strong>@tanstack/{framework}-query</strong> adapter! Join the{' '}
-            <a
-              href="https://tlinz.com/discord"
-              className="text-teal-500 font-bold"
-            >
-              TanStack Discord Server
-            </a>{' '}
-            and let's get to work!
-          </div>
-        </div>
-      ) : (
-        <div className="bg-white dark:bg-black">
-          <iframe
-            key={framework}
-            src={`https://stackblitz.com/github/${repo}/tree/${branch}/examples/${framework}/simple?embed=1&theme=${
-              isDark ? 'dark' : 'light'
-            }`}
-            title={`tannerlinsley/${framework}-query: basic`}
-            sandbox="allow-forms allow-modals allow-popups allow-presentation allow-same-origin allow-scripts"
-            className="shadow-2xl"
-            loading="lazy"
-            style={{
-              width: '100%',
-              height: '80vh',
-              border: '0',
-            }}
-          ></iframe>
-        </div>
-      )} */}
-
       <div className="flex flex-col gap-4 items-center">
         <div className="font-extrabold text-xl lg:text-2xl">
-          Wow, you've come a long way!
+          哇，您已經走了很長一段路！
         </div>
-        <div className="italic font-sm opacity-70">
-          Only one thing left to do...
-        </div>
+        <div className="italic font-sm opacity-70">只剩下一件事要做...</div>
         <div>
           <Link
             to="/start/latest/docs/framework/react/overview"
             className={`inline-block py-2 px-4 bg-cyan-500 rounded text-white uppercase font-extrabold`}
           >
-            Get Started!
+            開始使用！
           </Link>
         </div>
       </div>

@@ -1,8 +1,9 @@
 import { Link } from '@tanstack/react-router'
 
 const footerLinks = [
-  { label: 'Blog', to: '/blog' },
+  { label: '部落格', to: '/blog' },
   { label: '@Tan_Stack Twitter', to: 'https://twitter.com/tan_stack' },
+  { label: '@TanStackDev Twitter', to: 'https://twitter.com/TanStackDev' },
   {
     label: '@TannerLinsley Twitter',
     to: 'https://twitter.com/tannerlinsley',
@@ -13,15 +14,15 @@ const footerLinks = [
     to: 'https://www.youtube.com/user/tannerlinsley',
   },
   {
-    label: 'Nozzle.io - Keyword Rank Tracker',
+    label: 'Nozzle.io - 關鍵字排名追蹤器',
     to: 'https://nozzle.io',
   },
   {
-    label: 'Privacy Policy',
+    label: '隱私政策',
     to: '/privacy',
   },
   {
-    label: 'Terms of Service',
+    label: '服務條款',
     to: '/terms',
   },
 ]
@@ -46,9 +47,11 @@ export function Footer() {
           </div>
         ))}
       </div>
+      {/* 
       <div className={`text-center opacity-20`}>
         &copy; {new Date().getFullYear()} TanStack LLC
       </div>
+       */}
     </div>
   )
 }
