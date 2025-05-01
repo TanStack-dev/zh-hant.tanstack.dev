@@ -119,17 +119,17 @@ export const librariesByGroup = {
 }
 
 export const librariesGroupNamesMap = {
-  app: 'Application Building',
-  state: 'Data and State Management',
-  headlessUI: 'Headless UI',
-  other: 'Other',
+  app: '應用程式構建',
+  state: '資料與狀態管理',
+  headlessUI: '無頭 UI 元件',
+  other: '其他',
 }
 
 export function getLibrary(id: string) {
   const library = libraries.find((d) => d.id === id)
 
   if (!library) {
-    throw new Error(`Library with id "${id}" not found`)
+    throw new Error(`找不到 ID 為 "${id}" 的函式庫`)
   }
 
   return library as Library
@@ -137,14 +137,14 @@ export function getLibrary(id: string) {
 
 export function getFrameworkOptions(frameworkStrs: Framework[]) {
   if (!frameworkOptions) {
-    throw new Error('frameworkOptions is not defined')
+    throw new Error('frameworkOptions 未定義')
   }
   return frameworkOptions.filter((d) => frameworkStrs.includes(d.value))
 }
 
 export function getBranch(library: Library, argVersion?: string) {
   if (!library) {
-    throw new Error('Library is required')
+    throw new Error('函式庫是必需的')
   }
 
   const version = argVersion || library.latestVersion
@@ -154,7 +154,7 @@ export function getBranch(library: Library, argVersion?: string) {
     : version
 
   if (!resolvedVersion) {
-    throw new Error(`Could not resolve version for ${library.name}`)
+    throw new Error(`無法解析 ${library.name} 的版本`)
   }
 
   return resolvedVersion
