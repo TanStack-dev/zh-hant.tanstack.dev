@@ -15,6 +15,7 @@ import { seo } from '~/utils/seo'
 import { partners } from '~/utils/partners'
 import { twMerge } from 'tailwind-merge'
 import { LibraryFeatureHighlights } from '~/components/LibraryFeatureHighlights'
+import LandingPageGad from '~/components/LandingPageGad'
 
 export const Route = createFileRoute('/_libraries/router/$version/')({
   component: RouterVersionIndex,
@@ -185,6 +186,8 @@ function RouterVersionIndex() {
         </div>
       </div>
       */}
+
+      <LandingPageGad />
 
       <div>
         <div className="flex flex-col gap-4">

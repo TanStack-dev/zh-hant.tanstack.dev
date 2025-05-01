@@ -14,6 +14,7 @@ import { VscPreview } from 'react-icons/vsc'
 import { twMerge } from 'tailwind-merge'
 import { getLibrary } from '~/libraries'
 import { LibraryFeatureHighlights } from '~/components/LibraryFeatureHighlights'
+import LandingPageGad from '~/components/LandingPageGad'
 
 export const Route = createFileRoute('/_libraries/start/$version/')({
   component: VersionIndex,
@@ -201,17 +202,7 @@ export default function VersionIndex() {
       </div>
       */}
 
-      <div className="mx-auto max-w-[400px] flex flex-col gap-2 items-center">
-        <div className="shadow-lg rounded-lg overflow-hidden bg-white dark:bg-gray-800 dark:text-white max-w-[250px] mx-auto">
-          <Carbon />
-        </div>
-        <span
-          className="text-[.7rem] bg-gray-500 bg-opacity-10 py-1 px-2 rounded text-gray-500
-                dark:bg-opacity-20"
-        >
-          此廣告幫助我們對投入的時間感到開心，避免我們疲憊並放棄開源項目。錢萬歲！😉
-        </span>
-      </div>
+      <LandingPageGad />
 
       <div className="flex flex-col gap-4 items-center">
         <div className="font-extrabold text-xl lg:text-2xl">

@@ -11,6 +11,7 @@ import { Framework, getBranch, getLibrary } from '~/libraries'
 import { seo } from '~/utils/seo'
 import { twMerge } from 'tailwind-merge'
 import { LibraryFeatureHighlights } from '~/components/LibraryFeatureHighlights'
+import LandingPageGad from '~/components/LandingPageGad'
 
 export const Route = createFileRoute('/_libraries/ranger/$version/')({
   component: VersionIndex,
@@ -100,17 +101,7 @@ export default function VersionIndex() {
         </div>
         */}
 
-        <div className="mx-auto max-w-[400px] flex flex-col gap-2 items-center">
-          <div className="shadow-lg rounded-lg overflow-hidden bg-white dark:bg-gray-800 dark:text-white">
-            <Carbon />
-          </div>
-          <span
-            className="text-[.7rem] bg-gray-500 bg-opacity-10 py-1 px-2 rounded text-gray-500
-                dark:bg-opacity-20"
-          >
-            這個廣告幫助我們對投入的時間感到滿意，避免倦怠並放棄開源軟件。錢真好！😉
-          </span>
-        </div>
+        <LandingPageGad />
 
         <div className="flex flex-col gap-4">
           <div className="px-4 sm:px-6 lg:px-8  mx-auto container max-w-3xl sm:text-center">
