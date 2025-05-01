@@ -21,7 +21,7 @@ export function SearchButton({ className }: SearchButtonProps) {
       )}
     >
       <div className="flex items-center gap-2 text-sm">
-        <MdSearch className="text-lg" /> Search...
+        <MdSearch className="text-lg" /> 搜尋...
       </div>
       <div className="flex items-center bg-gray-500/10 rounded-lg px-2 py-1 gap-1 font-bold text-xs">
         <BiCommand /> + K

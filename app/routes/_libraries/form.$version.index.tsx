@@ -59,30 +59,28 @@ export default function FormVersionIndex() {
             lg:text-5xl lg:max-w-[800px]"
           >
             <span className="underline decoration-dashed decoration-yellow-500 decoration-3 underline-offset-2">
-              Headless, performant, and type-safe
+              無頭式、高效能且類型安全
             </span>{' '}
-            form state management for TS/JS, React, Vue, Angular, Solid, Lit and
+            的表單狀態管理工具，適用於 TS/JS、React、Vue、Angular、Solid、Lit 和
             Svelte
           </h2>
           <p
             className="text opacity-90 max-w-[500px]
             lg:text-xl lg:max-w-[800px]"
           >
-            Stop crying over your forms with a return to simplicity,
-            composability and type-safety with TanStack Form. Sporting a{' '}
+            告別表單處理的煩惱，回歸簡單、可組合和類型安全的開發方式。TanStack
+            Form 擁有{' '}
             <strong>
-              tiny footprint, zero dependencies, framework agnostic core and
-              granular type-safe APIs
+              小巧的體積、零依賴、框架無關的核心設計以及精細的類型安全 API
             </strong>
-            , TanStack Form is the perfect combination of simplicity and power
-            you need to build forms fast with peace of mind.
+            ，完美結合了簡單性和強大功能，讓您能夠快速構建表單并保持開發的安心。
           </p>
           <Link
             to="/$libraryId/$version/docs"
             params={{ libraryId: library.id, version }}
             className={`py-2 px-4 bg-yellow-400 text-black rounded uppercase font-extrabold`}
           >
-            Get Started
+            開始使用
           </Link>
         </div>
         <LibraryFeatureHighlights
@@ -92,30 +90,29 @@ export default function FormVersionIndex() {
         <div className="px-4 sm:px-6 lg:px-8 mx-auto">
           <div className=" sm:text-center pb-16">
             <h3 className="text-3xl text-center mx-auto leading-tight font-extrabold tracking-tight sm:text-4xl lg:leading-none mt-2">
-              No dependencies. All the Features.
+              零依賴，所有功能
             </h3>
             <p className="mt-4 text-xl max-w-3xl mx-auto leading-7 opacity-60">
-              With zero dependencies, TanStack Form is extremely lean given the
-              dense feature set it provides. From weekend hobbies all the way to
-              enterprise TanStack Form has the tools to help you succeed at the
-              speed of your creativity.
+              TanStack Form
+              零依賴，考慮到其豐富的功能集，它極為輕量。從週末愛好項目到企業級應用，TanStack
+              Form 擁有幫助您按照創造力速度成功的所有工具。
             </p>
           </div>
           <div className="grid grid-flow-row grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-10 gap-y-4  mx-auto">
             {[
-              // A list of features that @tanstack/form provides for managing form state, validation, touched/dirty states, UI integration, etc.
-              'Framework agnostic design',
-              'First Class TypeScript Support',
-              'Headless',
-              'Tiny / Zero Deps',
-              'Granularly Reactive Components/Hooks',
-              'Extensibility and plugin architecture',
-              'Modular architecture',
-              'Form/Field validation',
-              'Async Validation',
-              'Built-in Async Validation Debouncing',
-              'Configurable Validation Events',
-              'Deeply Nested Object/Array Fields',
+              // TanStack Form 提供的用於管理表單狀態、驗證、touched/dirty 狀態、UI 整合等方面的功能列表
+              '框架無關設計',
+              '一流的 TypeScript 支持',
+              '無頭式設計',
+              '小巧 / 零依賴',
+              '精細反應式組件/Hooks',
+              '擴展性和插件架構',
+              '模塊化架構',
+              '表單/字段驗證',
+              '非同步驗證',
+              '內建非同步驗證防抖',
+              '可配置的驗證事件',
+              '深層嵌套對象/陣列字段',
             ].map((d, i) => {
               return (
                 <span key={i} className="flex items-center gap-2">
@@ -128,7 +125,7 @@ export default function FormVersionIndex() {
 
         <div className="px-4 w-[500px] max-w-full mx-auto">
           <h3 className="text-center text-3xl leading-8 font-extrabold tracking-tight sm:text-4xl sm:leading-10 lg:leading-none mt-8">
-            Partners
+            合作夥伴
           </h3>
           <div className="h-8" />
           <div
@@ -138,19 +135,19 @@ export default function FormVersionIndex() {
                         dark:bg-black/40 dark:shadow-none"
           >
             <span className="flex items-center gap-2 p-12 text-4xl text-rose-500 font-black uppercase">
-              Form <TbHeartHandshake /> You?
+              Form <TbHeartHandshake /> 與您？
             </span>
             <div className="flex flex-col p-4 gap-4">
               <div>
-                We're looking for a TanStack Form OSS Partner to go above and
-                beyond the call of sponsorship. Are you as invested in TanStack
-                Form as we are? Let's push the boundaries of Form together!
+                我們正在尋找 TanStack Form
+                開源合作夥伴，希望您能超越一般贊助的範疇。您是否與我們一樣投入於
+                TanStack Form？讓我們一起推動 Form 的發展界限！
               </div>
               <a
                 href="mailto:partners@tanstack.com?subject=TanStack Form Partnership"
                 className="text-blue-500 uppercase font-black text-sm"
               >
-                Let's chat
+                一起交流
               </a>
             </div>
           </div>
@@ -158,7 +155,7 @@ export default function FormVersionIndex() {
 
         <div className="relative text-lg overflow-hidden">
           <h3 className="text-center text-3xl leading-8 font-extrabold tracking-tight sm:text-4xl sm:leading-10 lg:leading-none mt-8">
-            Sponsors
+            贊助商
           </h3>
           <div
             className="my-4 flex flex-wrap mx-auto max-w-screen-lg"
@@ -179,7 +176,7 @@ export default function FormVersionIndex() {
               href="https://github.com/sponsors/tannerlinsley"
               className="inline-block bg-green-500 px-4 py-2 text-xl mx-auto leading-tight font-extrabold tracking-tight text-white rounded-full"
             >
-              Become a Sponsor!
+              成為贊助商！
             </a>
           </div>
         </div>
@@ -192,24 +189,21 @@ export default function FormVersionIndex() {
             className="text-[.7rem] bg-gray-500 bg-opacity-10 py-1 px-2 rounded text-gray-500
                 dark:bg-opacity-20"
           >
-            This ad helps us be happy about our invested time and not burn out
-            and rage-quit OSS. Yay money! 😉
+            此廣告幫助我們對投入的時間感到開心，避免我們疲憊並放棄開源項目。錢萬歲！😉
           </span>
         </div>
 
         <div className="flex flex-col gap-4">
           <div className="px-4 sm:px-6 lg:px-8  mx-auto container max-w-3xl sm:text-center">
             <h3 className="text-3xl text-center leading-8 font-extrabold tracking-tight sm:text-4xl sm:leading-10 lg:leading-none mt-2">
-              Less code, fewer edge cases.
+              更少代碼，更少邊緣情況
             </h3>
             <p className="my-4 text-xl leading-7  text-gray-600">
-              Instead of encouraging hasty abstractions and hook-focused APIs,
-              TanStack Form embraces composition where it counts by giving you
-              headless APIs via components (and hooks if you want them of
-              course). TanStack Form is designed to be used directly in your
-              components and UI. This means less code, fewer edge cases, and
-              deeper control over your UI. Try it out with one of the examples
-              below!
+              TanStack Form 不鼓勵倉促的抽象和以 hook 為中心的
+              API，而是在關鍵處擁抱組合，通過組件（當然也提供 hooks）提供無頭式
+              API。TanStack Form 設計為直接在您的組件和 UI
+              中使用，這意味著更少的代碼、更少的邊緣情況和對 UI
+              的更深層次控制。請使用下面的示例之一來嘗試一下！
             </p>
             <div className="flex flex-wrap gap-2 justify-center">
               {(
@@ -259,18 +253,16 @@ export default function FormVersionIndex() {
 
         <div className="flex flex-col gap-4 items-center">
           <div className="font-extrabold text-xl lg:text-2xl">
-            Wow, you've come a long way!
+            哇，您已經走了很長一段路！
           </div>
-          <div className="italic font-sm opacity-70">
-            Only one thing left to do...
-          </div>
+          <div className="italic font-sm opacity-70">只剩下一件事要做...</div>
           <div>
             <Link
               to="/$libraryId/$version/docs"
               params={{ libraryId: library.id, version }}
               className={`inline-block py-2 px-4 bg-yellow-500 rounded text-black uppercase font-extrabold`}
             >
-              Get Started!
+              開始使用！
             </Link>
           </div>
         </div>

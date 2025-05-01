@@ -38,12 +38,11 @@ export const Route = createRootRouteWithContext<{
         content: 'width=device-width, initial-scale=1',
       },
       ...seo({
-        title:
-          'TanStack | High Quality Open-Source Software for Web Developers',
-        description: `Headless, type-safe, powerful utilities for complex workflows like Data Management, Data Visualization, Charts, Tables, and UI Components.`,
+        title: 'TanStack | 為網頁開發者打造的高品質開源軟件',
+        description: `無頭、類型安全、強大的實用工具，適用於數據管理、數據可視化、圖表、表格和 UI 組件等複雜工作流程。`,
         image: `https://tanstack.com${ogImage}`,
         keywords:
-          'tanstack,react,reactjs,react query,react table,open source,open source software,oss,software',
+          'tanstack,react,reactjs,react query,react table,開源,開源軟件,oss,軟件,前端工具,數據管理,前端框架',
       }),
       {
         name: 'google-adsense-account',
@@ -175,7 +174,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
   const themeClass = themeCookie === 'dark' ? 'dark' : ''
 
   return (
-    <html lang="en" className={themeClass}>
+    <html lang="zh-Hant" className={themeClass}>
       <head>
         {/* If the theme is set to auto, inject a tiny script to set the proper class on html based on the user preference */}
         {themeCookie === 'auto' ? (

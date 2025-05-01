@@ -4,7 +4,7 @@ import { FaGithub, FaBolt, FaCogs } from 'react-icons/fa'
 import { BiBookAlt } from 'react-icons/bi'
 import { twMerge } from 'tailwind-merge'
 
-const repo = 'tanstack/store'
+const repo = 'tanstack-dev/store'
 
 const textStyles = 'text-twine-600 dark:text-twine-500'
 
@@ -12,9 +12,10 @@ export const storeProject = {
   id: 'store',
   name: 'TanStack Store',
   cardStyles: `shadow-xl shadow-twine-700/20 dark:shadow-lg dark:shadow-twine-500/20 text-twine-500 dark:text-twine-400 border-2 border-transparent hover:border-current`,
+  docsRoot: 'docs/zh-hant',
   to: '/store',
-  tagline: `Framework agnostic data store with reactive framework adapters`,
-  description: `The immutable-reactive data store that powers the core of TanStack libraries and their framework adapters.`,
+  tagline: `具有響應式框架適配器的框架無關數據存儲`,
+  description: `為 TanStack 庫及其框架適配器的核心提供動力的不可變響應式數據存儲。`,
   ogImage: 'https://github.com/tanstack/store/raw/main/media/repo-header.png',
   badge: 'alpha',
   bgStyle: 'bg-twine-700',
@@ -32,12 +33,12 @@ export const storeProject = {
   menu: [
     {
       icon: <VscPreview />,
-      label: 'Examples',
+      label: '範例',
       to: '/store/latest/docs/framework/react/examples/simple',
     },
     {
       icon: <BiBookAlt />,
-      label: 'Docs',
+      label: '文檔',
       to: '/store/latest/docs',
     },
     {
@@ -48,53 +49,45 @@ export const storeProject = {
   ],
   featureHighlights: [
     {
-      title: 'Intuitive Configuration',
+      title: '直覺式配置',
       icon: <VscWand className={twMerge(textStyles)} />,
       description: (
         <div>
-          TanStack Store offers a seamless and intuitive configuration
-          management system that simplifies the process of building and
-          publishing high-quality JavaScript packages. TanStack Store{' '}
+          TanStack Store
+          提供了一個無縫且直覺式的配置管理系統，簡化了構建和發布高質量
+          JavaScript 套件的過程。TanStack Store{' '}
           <span className={twMerge('font-semibold', textStyles)}>
-            streamlines the configuration process, allowing developers to focus
-            on writing code
+            簡化了配置過程，使開發者能夠專注於編寫代碼
           </span>{' '}
-          without the hassle of intricate setup procedures.
+          而不必為複雜的設置程序而煩惱。
         </div>
       ),
     },
     {
-      title: 'Vite-Powered Builds',
+      title: 'Vite 驅動的構建',
       icon: <FaBolt className={twMerge(textStyles)} />,
       description: (
         <div>
-          TanStack Store's build configuration harnesses the Vite ecosystem.
-          Customize and extend your build workflows with ease, tailoring them to
-          meet the unique requirements of your project.{' '}
+          TanStack Store 的構建配置利用了 Vite
+          生態系統。輕鬆自定義和擴展您的構建工作流程，使其滿足您專案的獨特需求。{' '}
           <span className={twMerge('font-semibold', textStyles)}>
-            Whether you need advanced optimizations, pre-processors, or other
-            specialized tools,
+            無論您需要高級優化、預處理器還是其他專業工具，
           </span>{' '}
-          TanStack Store provides a robust foundation for crafting a build
-          pipeline that suits your specific needs.
+          TanStack Store 為打造適合您特定需求的構建流程提供了堅實的基礎。
         </div>
       ),
     },
     {
-      title: 'Effortless Publication',
+      title: '輕鬆發布',
       icon: <FaCogs className={twMerge(textStyles)} />,
       description: (
         <div>
-          Say goodbye to the complexities of code publishing. This package
-          provides tools designed to automate the publication of your projects.
-          Developers can effortlessly publish updates, manage versioning, and
-          release on npm and GitHub.{' '}
+          告別代碼發布的複雜性。此套件提供了設計用於自動化項目發布的工具。開發者可以輕鬆地發布更新、管理版本以及在
+          npm 和 GitHub 上發布。{' '}
           <span className={twMerge('font-semibold', textStyles)}>
-            TanStack Store takes care of the tedious aspects of package
-            publishing,
+            TanStack Store 處理了套件發布中那些繁瑣的方面，
           </span>{' '}
-          empowering developers to share their work with the community
-          efficiently.
+          使開發者能夠高效地與社區分享他們的工作。
         </div>
       ),
     },

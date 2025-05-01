@@ -7,9 +7,9 @@ export const Route = createFileRoute('/_libraries/learn')({
   component: LoginComp,
   head: () => ({
     meta: seo({
-      title: 'Learn | TanStack',
-      description: `Education and learning resources for TanStack libraries and projects`,
-      keywords: `learn,course,education,learning,resources,training`,
+      title: '學習 | TanStack',
+      description: `TanStack 函式庫和專案的教育和學習資源`,
+      keywords: `學習,課程,教育,學習資源,培訓`,
     }),
   }),
 })
@@ -22,15 +22,14 @@ function LoginComp() {
           <div className="space-y-4">
             <h1 className="space-y-2">
               <div className="text-3xl font-black tracking-tight sm:text-4xl md:text-5xl lg:text-6xl/none text-pretty">
-                Educational Resources
+                教育資源
               </div>
               <div className="text-xl font-normal tracking-tight sm:text-2xl md:text-3xl lg:text-4xl/none text-pretty">
-                for TanStack Libraries
+                適用於 TanStack 函式庫
               </div>
             </h1>
             <p className="mx-auto max-w-[700px] text-gray-500 md:text-xl dark:text-gray-400 text-pretty">
-              Whether you're just getting started or looking to level up as an
-              individual or team, we have resources that will help you succeed.
+              無論您是剛剛入門，還是希望提升個人或團隊能力，我們都有能幫助您取得成功的資源。
             </p>
           </div>
           <div className="flex items-stretch flex-wrap gap-4 max-w-full w-[900px] justify-center">
@@ -43,15 +42,13 @@ function LoginComp() {
               <div className="flex flex-col gap-6 pt-2 p-4 lg:p-8 ">
                 <div className="text-center">
                   <div className="text-sm opacity-70 mt-2">
-                    Created by{' '}
-                    <span className="font-bold">Dominik Dorfmeister</span> and{' '}
-                    <span className="font-bold">ui.dev</span>
+                    由 <span className="font-bold">Dominik Dorfmeister</span> 和{' '}
+                    <span className="font-bold">ui.dev</span> 創建
                   </div>
                 </div>
 
                 <div className="text-sm max-w-full text-center font-bold">
-                  “This is the best way to learn how to use React Query in
-                  real-world applications.”
+                  "這是在實際應用中學習如何使用 React Query 的最佳方式。"
                   <div className="mt-2 text-xs italic">—Tanner Linsley</div>
                 </div>
 
@@ -60,28 +57,26 @@ function LoginComp() {
                     <span className="text-lg text-green-500">
                       <FaCheckCircle />
                     </span>
-                    <div>Save time by learning with a guided approach</div>
+                    <div>通過引導式方法學習，節省時間</div>
                   </div>
                   <div className="flex items-start gap-2">
                     <span className="text-lg text-green-500">
                       <FaCheckCircle />
                     </span>
-                    <div>
-                      Get hands-on experience building a real-world application
-                    </div>
+                    <div>透過打造實際應用獲得實踐經驗</div>
                   </div>
                   <div className="flex items-start gap-2">
                     <span className="text-lg text-green-500">
                       <FaCheckCircle />
                     </span>
-                    <div>Never worry about data fetching again</div>
+                    <div>再也不用擔心數據獲取問題</div>
                   </div>
                 </div>
               </div>
             </Link>
             <div className="flex items-center min-w-[300px] max-w-[300px] rounded-lg bg-white dark:bg-gray-800/60 shadow-lg divide-y divide-white/30 overflow-hidden justify-center p-4">
               <div className="opacity-20 font-black text-3xl rotate-[-5deg]">
-                More Coming Soon!
+                更多內容即將到來！
               </div>
             </div>
             {/* <Link

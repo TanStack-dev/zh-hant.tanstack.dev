@@ -30,11 +30,11 @@ export const Route = createFileRoute('/_libraries/dedicated-support')({
   },
   head: () => ({
     meta: seo({
-      title: 'Dedicated Support | TanStack',
-      description: `Private consultation and enterprise support contracts for projects of any size.`,
+      title: '專屬支援 | TanStack',
+      description: `任何規模專案的私人諮詢和企業支援合約。`,
       // Keywords to target support for all sizes of companies, including consulting and enterprise support contracts
       keywords:
-        'tanstack,react,reactjs,react query,react table,open source,open source software,oss,software,consulting,enterprise support,dedicated support,enterprise contracts',
+        'tanstack,react,reactjs,react query,react table,開源,開源軟件,oss,軟件,諮詢,企業支援,專屬支援,企業合約',
     }),
   }),
 })
@@ -44,28 +44,28 @@ const teamMembers: Array<TeamMember> = [
     name: 'Tanner Linsley',
     twitter: '@TannerLinsley',
     website: 'tannerlinsley.com',
-    specialties: ['TypeScript', 'Routing', 'Ecosystem'],
+    specialties: ['TypeScript', '路由', '生態系統'],
     img: imgTanner,
   },
   {
     name: 'Dominik Dorfmeister',
     twitter: '@TkDodo',
     website: 'tkdodo.eu',
-    specialties: ['Data Management', 'SSR', 'TypeScript'],
+    specialties: ['數據管理', 'SSR', 'TypeScript'],
     img: imgDominik,
   },
   {
     name: 'Kevin Van Cott',
     twitter: '@KevinVanCott',
     website: 'kevinvancott.dev',
-    specialties: ['Tables', 'Data Grids', 'Dashboards'],
+    specialties: ['表格', '數據網格', '儀表板'],
     img: imgKevin,
   },
   {
     name: 'Corbin Crutchley',
     twitter: '@Crutchcorn',
     website: 'crutchcorn.dev',
-    specialties: ['Forms', 'Validation', 'State Management'],
+    specialties: ['表單', '驗證', '狀態管理'],
     img: imgCorbin,
   },
 ]
@@ -88,15 +88,14 @@ function LoginComp() {
             <div className="space-y-4">
               <h1 className="space-y-2">
                 <div className="text-3xl font-black tracking-tight sm:text-4xl md:text-5xl lg:text-6xl/none text-pretty">
-                  Dedicated Support
+                  專屬支援
                 </div>
                 <div className="text-xl font-normal tracking-tight sm:text-2xl md:text-3xl lg:text-4xl/none text-pretty">
-                  for TanStack Libraries
+                  為 TanStack 函式庫提供
                 </div>
               </h1>
               <p className="mx-auto max-w-[700px] text-gray-500 md:text-xl dark:text-gray-400 text-pretty">
-                Private consultation and enterprise support contracts for
-                projects of any size.
+                為各種規模的專案提供私人諮詢和企業支援合約。
               </p>
             </div>
             {/* <div>
@@ -121,7 +120,7 @@ function LoginComp() {
               >
                 <div className="relative h-40 sm:h-48 md:h-52 lg:h-60 overflow-hidden">
                   <img
-                    alt="User Avatar"
+                    alt="使用者頭像"
                     className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500 origin-top"
                     height={400}
                     src={member.img}
@@ -170,9 +169,7 @@ function LoginComp() {
         </div>
         <div className="text-center max-w-xl mt-12 mx-auto px-4 text-gray-500 dark:text-gray-400 text-sm border border-gray-200 dark:border-gray-700 rounded-lg p-4 bg-white dark:bg-gray-800/50">
           <p>
-            Note: This page is specifically for inquiring about dedicated paid
-            support contracts. For general support questions, please ask
-            questions in the{' '}
+            註：此頁面專門用於詢問付費支援合約。如有一般支援問題，請在{' '}
             <a
               className="text-[#5865F2] hover:text-[#4752C4] dark:text-[#7289DA] dark:hover:text-[#5B6EAE]"
               href="https://tlinz.com/discord"
@@ -181,26 +178,24 @@ function LoginComp() {
             >
               Discord
             </a>{' '}
-            or{' '}
+            或各個函式庫的{' '}
             <a
               className="text-blue-500 hover:text-blue-600 dark:text-blue-400 dark:hover:text-blue-300"
               href="https://github.com/tanstack"
               target="_blank"
               rel="noreferrer"
             >
-              GitHub&nbsp;Discussions
+              GitHub&nbsp;討論區
             </a>{' '}
-            of the individual libraries where we offer free help and support for
-            clearly described and scoped questions.
+            提問，我們在那裡為清晰描述且範圍明確的問題提供免費幫助和支援。
           </p>
         </div>
         <div className="flex items-center flex-col py-12 space-y-2">
           <div className="text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-extralight italic">
-            Let's chat!
+            讓我們聊聊！
           </div>
           <div className="opacity-30 text-xs max-w-[300px] text-center hover:opacity-100 focus:opacity-100 transition duration-300">
-            (Use the chat icon in the bottom right corner of the screen to get
-            started)
+            (點擊屏幕右下角的聊天圖標開始對話)
           </div>
           <CiTurnL1 className="text-[5rem] rotate-180 translate-x-1/3" />
         </div>

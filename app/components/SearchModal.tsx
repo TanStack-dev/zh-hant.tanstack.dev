@@ -187,7 +187,7 @@ function LibraryRefinement() {
     <div className="overflow-x-auto scrollbar-hide">
       <div className="flex items-center gap-2 p-2 min-w-max">
         <span className="text-xs font-medium text-gray-500 dark:text-gray-400 whitespace-nowrap">
-          Libraries:
+          函式庫：
         </span>
         <div className="flex gap-1.5">
           {items.map((item) => {
@@ -257,7 +257,7 @@ function FrameworkRefinement() {
     <div className="overflow-x-auto scrollbar-hide">
       <div className="flex items-center gap-2 p-2 min-w-max">
         <span className="text-xs font-medium text-gray-500 dark:text-gray-400 whitespace-nowrap">
-          Frameworks:
+          框架：
         </span>
         <div className="flex gap-1.5">
           {items.map((item) => {
@@ -298,9 +298,9 @@ function NoResults() {
 
   return (
     <div className="p-8 text-center text-gray-500 dark:text-gray-400">
-      <p className="text-lg font-medium">No results found</p>
+      <p className="text-lg font-medium">找不到結果</p>
       <p className="mt-2 text-sm">
-        Try adjusting your search or filters to find what you're looking for.
+        請嘗試調整您的搜尋或篩選條件以找到您要尋找的內容。
       </p>
     </div>
   )
@@ -424,7 +424,7 @@ export function SearchModal() {
             />
             <div className="flex justify-between items-center gap-2">
               <SearchBox
-                placeholder="Search..."
+                placeholder="搜尋..."
                 classNames={{
                   root: 'w-full',
                   form: 'text-xl flex items-center gap-2 px-4',
@@ -452,9 +452,9 @@ function SearchResults({ focusedIndex }: { focusedIndex: number }) {
   if (!results.query) {
     return (
       <div className="p-8 text-center text-gray-500 dark:text-gray-400">
-        <p className="text-lg font-medium">Search TanStack</p>
+        <p className="text-lg font-medium">搜尋 TanStack</p>
         <p className="mt-2 text-sm">
-          Start typing to search through our documentation, guides, and more.
+          開始輸入以搜尋我們的文檔、指南和更多內容。
         </p>
       </div>
     )
@@ -467,7 +467,7 @@ function SearchResults({ focusedIndex }: { focusedIndex: number }) {
       <div
         className="max-h-[70dvh] lg:max-h-[60dvh] overflow-y-auto"
         role="listbox"
-        aria-label="Search results"
+        aria-label="搜尋結果"
       >
         <NoResults />
         <Hits
