@@ -14,7 +14,6 @@ export const startProject = {
   id: 'start',
   name: 'TanStack Start',
   cardStyles: `shadow-xl shadow-cyan-500/20 dark:shadow-lg dark:shadow-cyan-500/30 text-cyan-500 dark:text-white-400 border-2 border-transparent hover:border-current`,
-  docsRoot: 'docs/zh-hant',
   to: '/start',
   tagline: `由 TanStack Router 驅動的全棧 React 框架`,
   description: `由 TanStack Router 和 Vite 驅動的全文檔 SSR、流式傳輸、伺服器功能和更多功能 - 準備部署到您喜歡的託管提供商。`,

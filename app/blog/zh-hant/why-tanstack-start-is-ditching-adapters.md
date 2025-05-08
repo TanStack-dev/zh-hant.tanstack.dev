@@ -1,6 +1,6 @@
 ---
 title: 為什麼 TanStack Start 放棄適配器
-published: 11/22/2024
+published: 2024-11-22
 authors:
   - Tanner Linsley
 ---

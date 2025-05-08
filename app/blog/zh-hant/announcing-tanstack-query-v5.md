@@ -1,6 +1,6 @@
 ---
 title: 發布 TanStack Query v5
-published: 10/17/2023
+published: 2023-10-17
 authors:
   - Dominik Dorfmeister
 ---
