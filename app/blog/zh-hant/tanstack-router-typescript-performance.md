@@ -1,6 +1,6 @@
 ---
 title: TanStack Router 中的 TypeScript 性能里程碑
-published: 09/17/2024
+published: 2024-09-17
 authors:
   - Christopher Horobin
 ---

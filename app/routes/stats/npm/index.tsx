@@ -1,20 +1,24 @@
 import * as React from 'react'
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { z } from 'zod'
+import { throttle } from '@tanstack/pacer'
+import { useDebouncedValue } from '@tanstack/react-pacer'
 import {
   MdClose,
-  MdLock,
-  MdLockOpen,
   MdVisibility,
   MdVisibilityOff,
   MdAdd,
+  MdPushPin,
+  MdMoreVert,
+  MdSearch,
+  MdArrowDownward,
+  MdArrowUpward,
 } from 'react-icons/md'
 import { keepPreviousData, queryOptions, useQuery } from '@tanstack/react-query'
 import * as Plot from '@observablehq/plot'
 import { ParentSize } from '@visx/responsive'
 import { Tooltip } from '~/components/Tooltip'
 import * as d3 from 'd3'
-import { useCombobox } from 'downshift'
 import { FaAngleRight, FaSpinner } from 'react-icons/fa'
 import { HexColorPicker } from 'react-colorful'
 import { seo } from '~/utils/seo'
@@ -26,18 +30,41 @@ import {
 } from '~/components/GoogleScripts'
 import { twMerge } from 'tailwind-merge'
 import logoColor100w from '~/images/logo-color-100w.png'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@radix-ui/react-dropdown-menu'
+import { Command } from 'cmdk'
 
+export const packageGroupSchema = z.object({
+  packages: z.array(
+    z.object({
+      name: z.string(),
+      hidden: z.boolean().optional(),
+    })
+  ),
+  color: z.string().nullable().optional(),
+  baseline: z.boolean().optional(),
+})
+
+export const packageComparisonSchema = z.object({
+  title: z.string(),
+  packageGroups: z.array(packageGroupSchema),
+  baseline: z.string().optional(),
+})
+
+const transformModeSchema = z.enum(['none', 'normalize-y'])
+const binTypeSchema = z.enum(['yearly', 'monthly', 'weekly', 'daily'])
+const showDataModeSchema = z.enum(['all', 'complete'])
 export const Route = createFileRoute('/stats/npm/')({
   validateSearch: z.object({
-    packages: z
-      .array(
-        z.object({
-          packages: z.array(z.string()),
-          color: z.string().nullable().optional(),
-        })
-      )
+    packageGroups: z
+      .array(packageGroupSchema)
       .optional()
-      .default(getPopularComparisons()[0].packages),
+      .default(getPopularComparisons()[0].packageGroups)
+      .catch(getPopularComparisons()[0].packageGroups),
     range: z
       .enum([
         '7-days',
@@ -50,53 +77,31 @@ export const Route = createFileRoute('/stats/npm/')({
         'all-time',
       ])
       .optional()
-      .default('365-days'),
-    baseline: z.string().optional(),
-    viewMode: z.enum(['absolute', 'relative']).optional().default('absolute'),
-    binningOption: z
-      .enum(['yearly', 'monthly', 'weekly', 'daily'])
-      .optional()
-      .default('weekly'),
-    alignStartDates: z.boolean().optional().default(false),
-    height: z.number().optional().default(400),
+      .default('365-days')
+      .catch('365-days'),
+    transform: transformModeSchema.optional().default('none').catch('none'),
+    facetX: z.enum(['name']).optional().catch(undefined),
+    facetY: z.enum(['name']).optional().catch(undefined),
+    binType: binTypeSchema.optional().default('weekly').catch('weekly'),
+    showDataMode: showDataModeSchema.optional().default('all').catch('all'),
+    height: z.number().optional().default(400).catch(400),
   }),
   loaderDeps: ({ search }) => ({
-    packages: search.packages,
-    range: search.range,
+    packageList: search.packageGroups
+      ?.map((p) => p.packages[0].name)
+      .join(' vs '),
   }),
   loader: async ({ deps }) => {
     return deps
   },
   head: ({ loaderData }) => ({
     meta: seo({
-      title: `NPM Download Stats and Trends — Track and Compare Packages Instantly: ${loaderData.packages
-        ?.map((p) => p.packages)
-        .join(' vs ')}`,
+      title: `NPM Download Stats and Trends — Track and Compare Packages Instantly: ${loaderData.packageList}`,
       description: `Get real-time npm download statistics, compare package popularity, spot trends, and make better choices for your projects. Faster and more detailed than npm-stat, npmtrends, and others.`,
     }),
   }),
   component: RouteComponent,
 })
-
-type NpmStats = {
-  start: string
-  end: string
-  package: string
-  downloads: Array<{
-    downloads: number
-    day: string
-  }>
-}
-
-type NpmResponse = {
-  downloads: Array<{
-    downloads: number
-    day: string
-  }>
-  start: string
-  end: string
-  package: string
-}
 
 const timeRanges = [
   { value: '7-days', label: '7 Days' },
@@ -119,7 +124,41 @@ type TimeRange =
   | '1825-days'
   | 'all-time'
 
-type BinningOption = 'monthly' | 'weekly' | 'daily' | 'yearly'
+type BinType = z.infer<typeof binTypeSchema>
+
+const binningOptions = [
+  {
+    label: 'Yearly',
+    value: 'yearly',
+    single: 'year',
+    bin: d3.timeYear,
+  },
+  {
+    label: 'Monthly',
+    value: 'monthly',
+    single: 'month',
+    bin: d3.timeMonth,
+  },
+  {
+    label: 'Weekly',
+    value: 'weekly',
+    single: 'week',
+    bin: d3.timeSunday,
+  },
+  {
+    label: 'Daily',
+    value: 'daily',
+    single: 'day',
+    bin: d3.timeDay,
+  },
+] as const
+
+const binningOptionsByType = binningOptions.reduce((acc, option) => {
+  acc[option.value] = option
+  return acc
+}, {} as Record<BinType, (typeof binningOptions)[number]>)
+
+type TransformMode = z.infer<typeof transformModeSchema>
 
 type NpmPackage = {
   name: string
@@ -132,27 +171,6 @@ type NpmPackage = {
     created: string
     modified: string
   }
-}
-
-type PackageInfo = {
-  packages: string[]
-  color?: string | null
-}
-
-type PackageValue = string[] | PackageInfo
-
-function isPackageInfo(value: PackageValue): value is PackageInfo {
-  return typeof value === 'object' && 'packages' in value
-}
-
-function getPackageList(value: PackageValue): string[] {
-  return isPackageInfo(value) ? value.packages : value
-}
-
-// Define package aliases that should be combined
-const packageAliases: Record<string, string[]> = {
-  '@tanstack/react-query': ['react-query'],
-  // Add more aliases as needed
 }
 
 const defaultColors = [
@@ -168,38 +186,64 @@ const defaultColors = [
   '#17becf', // cyan
 ] as const
 
+// Custom number formatter for more precise control
+const formatNumber = (num: number) => {
+  if (num >= 1_000_000) {
+    return `${(num / 1_000_000).toFixed(1)}M`
+  }
+  if (num >= 1_000) {
+    return `${(num / 1_000).toFixed(1)}k`
+  }
+  return num.toString()
+}
+
+const dropdownButtonStyles = {
+  base: 'bg-gray-500/10 rounded-md px-2 py-1 text-sm flex items-center gap-1',
+  active: 'bg-gray-500/20',
+} as const
+
+type NpmQueryData = {
+  packages: {
+    downloads: any[]
+    name: string
+    hidden?: boolean | undefined
+  }[]
+  baseline?: boolean
+  start: string
+  end: string
+  color?: string | null | undefined
+  error?: string | null
+}[]
+
 function npmQueryOptions({
-  packages,
+  packageGroups,
   range,
-  hiddenSubPackages,
 }: {
-  packages: Array<{ packages: string[]; color?: string | null }>
+  packageGroups: z.infer<typeof packageGroupSchema>[]
   range: TimeRange
-  hiddenSubPackages: Set<string>
 }) {
-  const now = new Date()
+  const now = d3.timeDay(new Date())
   // Set to start of today to avoid timezone issues
   now.setHours(0, 0, 0, 0)
-  let startDate: Date
   let endDate = now
 
   // Function to get package creation date
   const getPackageCreationDate = async (packageName: string): Promise<Date> => {
     try {
       const response = await fetch(`https://registry.npmjs.org/${packageName}`)
-      if (!response.ok) return new Date('2010-01-12') // Fallback date
+      if (!response.ok) return d3.timeDay(new Date('2010-01-12')) // Fallback date
       const data = await response.json()
-      return new Date(data.time?.created || '2010-01-12')
+      return d3.timeDay(new Date(data.time?.created || '2010-01-12'))
     } catch (error) {
       console.error(`Error fetching creation date for ${packageName}:`, error)
-      return new Date('2010-01-12') // Fallback date
+      return d3.timeDay(new Date('2010-01-12')) // Fallback date
     }
   }
 
   // Get the earliest creation date among all packages
   const getEarliestCreationDate = async () => {
-    const packageNames = packages.flatMap((pkg) =>
-      pkg.packages.filter((p) => !hiddenSubPackages.has(p))
+    const packageNames = packageGroups.flatMap((pkg) =>
+      pkg.packages.filter((p) => !p.hidden).map((p) => p.name)
     )
 
     const creationDates = await Promise.all(
@@ -208,204 +252,139 @@ function npmQueryOptions({
     return new Date(Math.min(...creationDates.map((date) => date.getTime())))
   }
 
-  switch (range) {
-    case '7-days':
-      startDate = d3.timeDay.offset(now, -7)
-      break
-    case '30-days':
-      startDate = d3.timeDay.offset(now, -30)
-      break
-    case '90-days':
-      startDate = d3.timeDay.offset(now, -90)
-      break
-    case '180-days':
-      startDate = d3.timeDay.offset(now, -180)
-      break
-    case '365-days':
-      startDate = d3.timeDay.offset(now, -365)
-      break
-    case '730-days':
-      startDate = d3.timeDay.offset(now, -730)
-      break
-    case '1825-days':
-      startDate = d3.timeDay.offset(now, -1825)
-      break
-    case 'all-time':
-      // We'll handle this in the queryFn
-      startDate = new Date('2010-01-12') // This will be overridden
-      break
-  }
+  let startDate = (() => {
+    switch (range) {
+      case '7-days':
+        return d3.timeDay.offset(now, -7)
+      case '30-days':
+        return d3.timeDay.offset(now, -30)
+      case '90-days':
+        return d3.timeDay.offset(now, -90)
+      case '180-days':
+        return d3.timeDay.offset(now, -180)
+      case '365-days':
+        return d3.timeDay.offset(now, -365)
+      case '730-days':
+        return d3.timeDay.offset(now, -730)
+      case '1825-days':
+        return d3.timeDay.offset(now, -1825)
+      case 'all-time':
+        // We'll handle this in the queryFn
+        return d3.timeDay(new Date('2010-01-12')) // This will be overridden
+    }
+  })()
 
   const formatDate = (date: Date) => {
     return date.toISOString().split('T')[0]
   }
 
-  // Expand package names to include aliases, but exclude hidden sub-packages
-  const expandedPackageNames = packages.flatMap((pkg) =>
-    pkg.packages.filter((p) => !hiddenSubPackages.has(p))
-  )
-
   return queryOptions({
-    queryKey: expandedPackageNames.map((packageName) => [
-      'npm-stats',
-      packageName,
-      range,
-    ]),
-    queryFn: async () => {
+    queryKey: ['npm-stats', packageGroups, range],
+    queryFn: async (): Promise<NpmQueryData> => {
       // For all-time range, get the earliest creation date
       if (range === 'all-time') {
         startDate = await getEarliestCreationDate()
       }
 
-      const results = await Promise.all(
-        expandedPackageNames.map(async (packageName) => {
-          // For longer ranges, we need to make multiple requests
-          if (range === '1825-days' || range === 'all-time') {
-            const chunks: NpmStats[] = []
-            let currentEnd = endDate
-            let currentStart = startDate
+      return Promise.all(
+        packageGroups.map(async (packageGroup) => {
+          try {
+            const packages = await Promise.all(
+              packageGroup.packages.map(async (pkg) => {
+                let currentEnd = endDate
+                let currentStart = startDate
 
-            while (currentStart < currentEnd) {
-              const chunkEnd = new Date(currentEnd)
-              const chunkStart = new Date(
-                Math.max(
-                  currentStart.getTime(),
-                  currentEnd.getTime() - 365 * 24 * 60 * 60 * 1000
+                const chunkRanges: { start: Date; end: Date }[] = []
+
+                while (currentStart < currentEnd) {
+                  const chunkEnd = d3.timeDay(new Date(currentEnd))
+                  const chunkStart = d3.timeDay.offset(currentEnd, -365)
+
+                  // Move the end date to the day before the start of the current chunk
+                  currentEnd = d3.timeDay.offset(chunkStart, -1)
+
+                  chunkRanges.push({ start: chunkStart, end: chunkEnd })
+                }
+
+                const chunks = await Promise.all(
+                  chunkRanges.map(async (chunk) => {
+                    const url = `https://api.npmjs.org/downloads/range/${formatDate(
+                      chunk.start
+                    )}:${formatDate(chunk.end)}/${pkg.name}`
+                    const response = await fetch(url)
+                    if (!response.ok) {
+                      if (response.status === 404) {
+                        throw new Error('not_found')
+                      }
+                      throw new Error('fetch_failed')
+                    }
+                    return response.json()
+                  })
                 )
-              )
 
-              const url = `https://api.npmjs.org/downloads/range/${formatDate(
-                chunkStart
-              )}:${formatDate(chunkEnd)}/${packageName}`
-              const response = await fetch(url)
-              if (!response.ok) break
-              const data = await response.json()
-              chunks.push(data)
+                // Combine all chunks and ensure no gaps
+                const downloads = chunks
+                  .flatMap((chunk) => chunk.downloads || [])
+                  .sort(
+                    (a, b) =>
+                      new Date(a.day).getTime() - new Date(b.day).getTime()
+                  )
 
-              // Move the end date to the day before the start of the current chunk
-              currentEnd = new Date(chunkStart.getTime() - 24 * 60 * 60 * 1000)
-            }
+                // Find the earliest non-zero download
+                const firstNonZero = downloads.find((d) => d.downloads > 0)
+                if (firstNonZero) {
+                  startDate = d3.timeDay(new Date(firstNonZero.day))
+                }
 
-            // Combine all chunks and ensure no gaps
-            const combinedDownloads = chunks
-              .flatMap((chunk) => chunk.downloads || [])
-              .sort(
-                (a, b) => new Date(a.day).getTime() - new Date(b.day).getTime()
-              )
-
-            // Find the earliest non-zero download
-            const firstNonZero = combinedDownloads.find((d) => d.downloads > 0)
-            if (firstNonZero) {
-              startDate = new Date(firstNonZero.day)
-            }
-
-            // Fill in any gaps with zero downloads
-            const filledDownloads = []
-            let currentDate = new Date(startDate)
-            const endDateObj = new Date(endDate)
-
-            while (currentDate <= endDateObj) {
-              const dateStr = formatDate(currentDate)
-              const existingData = combinedDownloads.find(
-                (d) => d.day === dateStr
-              )
-              filledDownloads.push(
-                existingData || { day: dateStr, downloads: 0 }
-              )
-              currentDate = new Date(
-                currentDate.getTime() + 24 * 60 * 60 * 1000
-              )
-            }
+                return { ...pkg, downloads }
+              })
+            )
 
             return {
-              package: packageName,
-              downloads: filledDownloads,
+              ...packageGroup,
+              packages,
               start: formatDate(startDate),
               end: formatDate(endDate),
-            } as NpmStats
+              error: null,
+            }
+          } catch (error) {
+            return {
+              ...packageGroup,
+              packages: packageGroup.packages.map((pkg) => ({
+                ...pkg,
+                downloads: [],
+              })),
+              start: formatDate(startDate),
+              end: formatDate(endDate),
+              error:
+                error instanceof Error && error.message === 'not_found'
+                  ? `Package "${packageGroup.packages[0].name}" not found on npm`
+                  : 'Failed to fetch package data (see console for details)',
+            }
           }
-
-          // For shorter ranges, use a single request
-          const url = `https://api.npmjs.org/downloads/range/${formatDate(
-            startDate
-          )}:${formatDate(endDate)}/${packageName}`
-          const response = await fetch(url)
-          if (!response.ok) return null
-          const data = await response.json()
-
-          return {
-            ...data,
-            downloads: data.downloads || [],
-          } as NpmStats
         })
       )
-
-      // Combine results for aliased packages
-      const combinedResults = packages.map((pkg) => {
-        const allPackages = [...pkg.packages]
-        const packageResults = results.filter(
-          (r) => r && allPackages.includes(r.package)
-        )
-
-        if (!packageResults.length) return null
-
-        // Combine downloads from all packages
-        const combinedDownloads = packageResults.reduce((acc, curr) => {
-          if (!curr) return acc
-          curr.downloads.forEach((d) => {
-            const existing = acc.find((a) => a.day === d.day)
-            if (existing) {
-              existing.downloads += d.downloads
-            } else {
-              acc.push({ ...d })
-            }
-          })
-          return acc
-        }, [] as Array<{ day: string; downloads: number }>)
-
-        // Sort by date
-        combinedDownloads.sort(
-          (a, b) => new Date(a.day).getTime() - new Date(b.day).getTime()
-        )
-
-        return {
-          package: pkg.packages[0], // Use first package as the main package name
-          downloads: combinedDownloads,
-          start: formatDate(startDate),
-          end: formatDate(endDate),
-        } as NpmStats
-      })
-
-      return combinedResults
     },
     placeholderData: keepPreviousData,
   })
 }
 
-const formatNumber = (num: number) => {
-  if (num >= 1000000) {
-    return `${(num / 1000000).toFixed(1)}M`
-  }
-  if (num >= 1000) {
-    return `${(num / 1000).toFixed(1)}k`
-  }
-  return num.toString()
-}
-
 // Get or assign colors for packages
 function getPackageColor(
   packageName: string,
-  packages: Array<{ packages: string[]; color?: string | null }>
+  packages: z.infer<typeof packageGroupSchema>[]
 ) {
   // Find the package group that contains this package
-  const packageInfo = packages.find((pkg) => pkg.packages.includes(packageName))
+  const packageInfo = packages.find((pkg) =>
+    pkg.packages.some((p) => p.name === packageName)
+  )
   if (packageInfo?.color) {
     return packageInfo.color
   }
 
   // Otherwise, assign a default color based on the package's position
   const packageIndex = packages.findIndex((pkg) =>
-    pkg.packages.includes(packageName)
+    pkg.packages.some((p) => p.name === packageName)
   )
   return defaultColors[packageIndex % defaultColors.length]
 }
@@ -423,30 +402,22 @@ function PlotFigure({ options }: { options: any }) {
   return <div ref={containerRef} />
 }
 
-function NpmStatsChart({
-  stats,
-  baseline,
-  viewMode,
-  hiddenPackages,
-  binningOption,
-  alignStartDates,
-  packages,
+function Resizable({
+  height,
+  onHeightChange,
+  children,
 }: {
-  stats: NpmStats[]
-  baseline?: string
-  viewMode: 'absolute' | 'relative'
-  hiddenPackages: Set<string>
-  binningOption: BinningOption
-  alignStartDates: boolean
-  packages: Array<{ packages: string[]; color?: string | null }>
+  height: number
+  onHeightChange: (height: number) => void
+  children: React.ReactNode
 }) {
-  // Get the range and height from the URL
-  const { range = '7-days', height: initialHeight = 400 } = Route.useSearch()
   const [isDragging, setIsDragging] = React.useState(false)
   const [dragEl, setDragEl] = React.useState<HTMLDivElement | null>(null)
   const startYRef = React.useRef<number>(0)
-  const startHeightRef = React.useRef<number>(initialHeight)
-  const navigate = Route.useNavigate()
+  const startHeightRef = React.useRef<number>(height)
+
+  const onHeightChangeRef = React.useRef(onHeightChange)
+  onHeightChangeRef.current = onHeightChange
 
   React.useEffect(() => {
     if (!dragEl) return
@@ -454,19 +425,12 @@ function NpmStatsChart({
     const handleMouseDown = (e: MouseEvent) => {
       setIsDragging(true)
       startYRef.current = e.clientY
-      startHeightRef.current = initialHeight
+      startHeightRef.current = height
 
       const handleMouseMove = (e: MouseEvent) => {
         const deltaY = e.clientY - startYRef.current
         const newHeight = Math.max(300, startHeightRef.current + deltaY)
-        navigate({
-          to: '.',
-          search: (prev) => ({
-            ...prev,
-            height: newHeight,
-          }),
-          resetScroll: false,
-        })
+        onHeightChangeRef.current(newHeight)
       }
 
       const handleMouseUp = () => {
@@ -483,296 +447,11 @@ function NpmStatsChart({
     return () => {
       dragEl?.removeEventListener('mousedown', handleMouseDown)
     }
-  }, [dragEl, initialHeight, navigate])
-
-  if (!stats.length) return null
-
-  // Filter data based on selected range
-  const filteredStats = stats.map((stat) => {
-    const now = new Date()
-    let cutoffDate: Date
-
-    switch (range) {
-      case '7-days':
-        cutoffDate = d3.timeWeek.offset(d3.timeWeek.floor(now), -1)
-        break
-      case '30-days':
-        cutoffDate = d3.timeWeek.offset(d3.timeWeek.floor(now), -4)
-        break
-      case '90-days':
-        cutoffDate = d3.timeWeek.offset(d3.timeWeek.floor(now), -13)
-        break
-      case '180-days':
-        cutoffDate = d3.timeMonth.offset(d3.timeMonth.floor(now), -6)
-        break
-      case '365-days':
-        cutoffDate = d3.timeMonth.offset(d3.timeMonth.floor(now), -12)
-        break
-      case '730-days':
-        cutoffDate = d3.timeMonth.offset(d3.timeMonth.floor(now), -24)
-        break
-      case '1825-days':
-        cutoffDate = d3.timeMonth.offset(d3.timeMonth.floor(now), -60)
-        break
-      case 'all-time':
-        cutoffDate = new Date('2010-01-12')
-        break
-      default:
-        return stat
-    }
-
-    // Compare dates at the start of the day
-    cutoffDate.setHours(0, 0, 0, 0)
-    return {
-      ...stat,
-      downloads: stat.downloads.filter((d) => {
-        const downloadDate = new Date(d.day)
-        downloadDate.setHours(0, 0, 0, 0)
-        return downloadDate >= cutoffDate
-      }),
-    }
-  })
-
-  // Find the latest first non-zero date across all packages if aligning start dates
-  let latestFirstNonZero: Date | null = null
-  if (alignStartDates) {
-    latestFirstNonZero = new Date(
-      Math.max(
-        ...filteredStats.map((stat) => {
-          const firstNonZero = stat.downloads.find((d) => d.downloads > 0)
-          return firstNonZero ? new Date(firstNonZero.day).getTime() : 0
-        })
-      )
-    )
-  }
-
-  // Bin the data first
-  const binnedStats = filteredStats.map((stat) => {
-    const binnedDownloads = stat.downloads.map((d) => {
-      const date = new Date(d.day)
-      let binnedDate = date
-
-      switch (binningOption) {
-        case 'yearly':
-          binnedDate = d3.timeYear.floor(date)
-          break
-        case 'monthly':
-          binnedDate = d3.timeMonth.floor(date)
-          break
-        case 'weekly':
-          binnedDate = d3.timeWeek.floor(date)
-          break
-        case 'daily':
-          binnedDate = d3.timeDay.floor(date)
-          break
-      }
-
-      return {
-        ...d,
-        day: binnedDate.toISOString().split('T')[0],
-      }
-    })
-
-    // Aggregate downloads by binned date
-    const aggregatedDownloads = d3.rollup(
-      binnedDownloads,
-      (v) => ({
-        day: v[0].day,
-        downloads: d3.sum(v, (d) => d.downloads),
-      }),
-      (d) => d.day
-    )
-
-    return {
-      ...stat,
-      downloads: Array.from(aggregatedDownloads.values()),
-    }
-  })
-
-  // Find the baseline stats
-  const baselineStats = baseline
-    ? binnedStats.find((s) => s.package === baseline)
-    : null
-
-  const baselineByDate = new Map(
-    baselineStats?.downloads.map((d) => [d.day, d.downloads]) || []
-  )
-
-  // Flatten the data for the plot using binned stats
-  const plotData = binnedStats.flatMap((stat) => {
-    const processed: {
-      pkg: string
-      date: Date
-      downloads: number
-      normalizedDownloads: number
-    }[] = []
-
-    stat.downloads.forEach((d) => {
-      const baselineDecimal = baseline ? baselineByDate.get(d.day) ?? 1 : 1
-      const normalizedDownloads = d.downloads / baselineDecimal
-
-      processed.push({
-        ...d,
-        pkg: stat.package,
-        date: new Date(d.day),
-        downloads: d.downloads,
-        normalizedDownloads: normalizedDownloads,
-      })
-    })
-
-    // Calculate relative growth if in relative mode
-    if (viewMode === 'relative') {
-      return processed.map((d) => {
-        const firstValue =
-          processed.find((p) => p.pkg === d.pkg)?.normalizedDownloads ?? 0
-
-        return {
-          ...d,
-          normalizedDownloads: (d.normalizedDownloads / firstValue - 1) * 100,
-        }
-      })
-    }
-
-    return processed
-  })
-
-  // Filter out hidden packages for display
-  const visibleData = plotData.filter((d) => !hiddenPackages.has(d.pkg))
-
-  // Shift dates if aligning start dates
-  const shiftedData =
-    alignStartDates && latestFirstNonZero
-      ? visibleData.map((d) => {
-          const firstNonZero = visibleData.find(
-            (p) => p.pkg === d.pkg && p.downloads > 0
-          )
-          if (!firstNonZero) return d
-
-          const daysSinceFirstNonZero = Math.floor(
-            (d.date.getTime() - firstNonZero.date.getTime()) /
-              (24 * 60 * 60 * 1000)
-          )
-          const newDate = new Date(latestFirstNonZero)
-          newDate.setDate(newDate.getDate() + daysSinceFirstNonZero)
-
-          return {
-            ...d,
-            date: newDate,
-          }
-        })
-      : visibleData
+  }, [dragEl, height])
 
   return (
-    <div className="relative" style={{ height: initialHeight }}>
-      <ParentSize>
-        {({ width = 1000, height }) => (
-          <PlotFigure
-            options={{
-              marginLeft: 70,
-              marginRight: 10,
-              marginBottom: 70,
-              width,
-              height,
-              marks: [
-                Plot.ruleY([0], {
-                  stroke: 'currentColor',
-                  strokeWidth: 1.5,
-                  strokeOpacity: 0.5,
-                }),
-                Plot.line(shiftedData, {
-                  x: 'date',
-                  y: 'normalizedDownloads',
-                  stroke: 'pkg',
-                  strokeWidth: 2,
-                  curve: 'monotone-x',
-                  tip: 'x',
-                }),
-                Plot.dot(shiftedData, {
-                  x: 'date',
-                  y: 'normalizedDownloads',
-                  fill: 'pkg',
-                  r: 3,
-                  title: (d: (typeof shiftedData)[0]) => {
-                    const value = d.normalizedDownloads
-                    const label =
-                      viewMode === 'relative'
-                        ? 'growth'
-                        : baseline
-                        ? 'of baseline'
-                        : 'downloads'
-                    return `${
-                      d.pkg
-                    }\n${d.date.toLocaleDateString()}\n${formatNumber(
-                      d.downloads
-                    )} downloads\n${value?.toFixed(1) ?? '0'}% ${label}`
-                  },
-                }),
-              ],
-              x: {
-                type: 'time',
-                label: alignStartDates ? 'Days Since First Download' : 'Date',
-                labelOffset: 35,
-                tickFormat: (d: Date) => {
-                  if (alignStartDates) {
-                    const days = Math.floor(
-                      (d.getTime() - latestFirstNonZero!.getTime()) /
-                        (24 * 60 * 60 * 1000)
-                    )
-                    return `Day ${days}`
-                  }
-                  switch (range) {
-                    case '365-days':
-                    case '180-days':
-                      return d3.timeFormat('%b %Y')(d)
-                    case '30-days':
-                    case '90-days':
-                      return d3.timeFormat('%b %d')(d)
-                    case '7-days':
-                      return d3.timeFormat('%a')(d)
-                    case '730-days':
-                    case '1825-days':
-                    case 'all-time':
-                      return binningOption === 'yearly'
-                        ? d3.timeFormat('%Y')(d)
-                        : d3.timeFormat('%b %Y')(d)
-                    default:
-                      return d3.timeFormat('%x')(d)
-                  }
-                },
-              },
-              y: {
-                label:
-                  viewMode === 'relative'
-                    ? 'Growth (%)'
-                    : baseline
-                    ? 'Downloads (% of baseline)'
-                    : 'Downloads',
-                labelOffset: 35,
-                tickFormat: (d: number) => {
-                  if (viewMode === 'relative' || baseline) {
-                    return `${d.toFixed(1)}%`
-                  }
-                  if (d >= 1000000) {
-                    return `${(d / 1000000).toFixed(1)}M`
-                  }
-                  if (d >= 1000) {
-                    return `${(d / 1000).toFixed(1)}K`
-                  }
-                  return d.toString()
-                },
-              },
-              grid: true,
-              color: {
-                domain: [...new Set(plotData.map((d) => d.pkg))],
-                range: [...new Set(plotData.map((d) => d.pkg))].map((pkg) =>
-                  getPackageColor(pkg, packages)
-                ),
-                legend: false,
-              },
-            }}
-          />
-        )}
-      </ParentSize>
+    <div className="relative" style={{ height }}>
+      {children}
       <div
         ref={setDragEl}
         className={`absolute bottom-0 left-0 right-0 h-2 cursor-ns-resize flex items-center justify-center select-none ${
@@ -785,145 +464,455 @@ function NpmStatsChart({
   )
 }
 
-function PackageSearch() {
-  const [items, setItems] = React.useState<NpmPackage[]>([])
-  const [isLoading, setIsLoading] = React.useState(false)
-  const navigate = Route.useNavigate()
+const showDataModeOptions = [
+  { value: 'all', label: 'All Data' },
+  { value: 'complete', label: 'Hide Partial Data' },
+] as const
 
-  const {
-    isOpen,
-    getMenuProps,
-    getInputProps,
-    highlightedIndex,
-    getItemProps,
-    reset,
-    inputValue,
-  } = useCombobox({
-    items,
-    defaultHighlightedIndex: 0,
-    onInputValueChange: ({ inputValue }) => {
-      if (inputValue && inputValue.length > 2) {
-        setIsLoading(true)
-        setItems([
-          {
-            name: inputValue,
-            description: '',
-            version: '',
-            publisher: { username: '' },
-          },
-        ])
+type ShowDataMode = z.infer<typeof showDataModeSchema>
 
-        fetch(
-          `https://api.npms.io/v2/search?q=${encodeURIComponent(
-            inputValue
-          )}&size=10`
+function NpmStatsChart({
+  queryData,
+  transform,
+  binType,
+  packages,
+  range,
+  facetX,
+  facetY,
+  showDataMode,
+}: {
+  queryData: undefined | NpmQueryData
+  transform: TransformMode
+  binType: BinType
+  packages: z.infer<typeof packageGroupSchema>[]
+  range: TimeRange
+  facetX?: FacetValue
+  facetY?: FacetValue
+  showDataMode: ShowDataMode
+}) {
+  if (!queryData?.length) return null
+
+  const binOption = binningOptionsByType[binType]
+  const binUnit = binningOptionsByType[binType].bin
+
+  const now = d3.timeDay(new Date())
+
+  let startDate = (() => {
+    switch (range) {
+      case '7-days':
+        return d3.timeDay.offset(now, -7)
+      case '30-days':
+        return d3.timeDay.offset(now, -30)
+      case '90-days':
+        return d3.timeDay.offset(now, -90)
+      case '180-days':
+        return d3.timeDay.offset(now, -180)
+      case '365-days':
+        return d3.timeDay.offset(now, -365)
+      case '730-days':
+        return d3.timeDay.offset(now, -730)
+      case '1825-days':
+        return d3.timeDay.offset(now, -1825)
+      case 'all-time':
+        return d3.timeDay(new Date('2010-01-12'))
+    }
+  })()
+
+  startDate = binOption.bin.floor(startDate)
+
+  const combinedPackageGroups = queryData.map((packageGroup) => {
+    // Filter out any sub packages that are hidden before
+    // summing them into a unified downloads count
+    const visiblePackages = packageGroup.packages.filter(
+      (p, i) => !i || !p.hidden
+    )
+
+    const downloadsByDate: Map<number, number> = new Map()
+
+    visiblePackages.forEach((pkg) => {
+      pkg.downloads.forEach((d) => {
+        // Clamp the data to the floor bin of the start date
+        const date = d3.timeDay(new Date(d.day))
+        if (date < startDate) return
+
+        downloadsByDate.set(
+          date.getTime(),
+          // Sum the downloads for each date
+          (downloadsByDate.get(date.getTime()) || 0) + d.downloads
         )
-          .then((res) => res.json())
-          .then((data) => {
-            const hasInputValue = data.results.find(
-              (r: any) => r.package.name === inputValue
-            )
-
-            setItems([
-              ...(hasInputValue ? [] : [{ name: inputValue }]),
-              ...data.results.map((r: any) => r.package),
-            ])
-            setIsLoading(false)
-          })
-          .catch(() => {
-            setIsLoading(false)
-          })
-      } else {
-        setItems([])
-      }
-    },
-    onSelectedItemChange: ({ selectedItem }) => {
-      if (!selectedItem) return
-
-      navigate({
-        to: '.',
-        search: (prev) => ({
-          ...prev,
-          packages: [
-            ...prev.packages,
-            {
-              packages: [selectedItem.name],
-            },
-          ],
-        }),
-        resetScroll: false,
       })
-      reset()
-      setItems([])
-    },
+    })
+
+    return {
+      ...packageGroup,
+      downloads: Array.from(downloadsByDate.entries()).map(
+        ([date, downloads]) => [d3.timeDay(new Date(date)), downloads]
+      ) as [Date, number][],
+    }
   })
 
+  // Prepare data for plotting
+  const binnedPackageData = combinedPackageGroups.map((packageGroup) => {
+    // Now apply our binning as groupings
+    const binned = d3.sort(
+      d3.rollup(
+        packageGroup.downloads,
+        (v) => d3.sum(v, (d) => d[1]),
+        (d) => binUnit.floor(d[0])
+      ),
+      (d) => d[0]
+    )
+
+    const downloads = binned.map((d) => ({
+      name: packageGroup.packages[0].name,
+      date: d3.timeDay(new Date(d[0])),
+      downloads: d[1],
+    }))
+
+    return {
+      ...packageGroup,
+      downloads,
+    }
+  })
+
+  // Apply the baseline correction
+
+  const baselinePackage = binnedPackageData.find((pkg) => {
+    return pkg.baseline
+  })
+
+  const baseLineCorrectionsByDate =
+    baselinePackage && binnedPackageData.length
+      ? (() => {
+          const firstValue = baselinePackage.downloads[0].downloads
+
+          return new Map(
+            baselinePackage.downloads.map((d) => {
+              return [
+                d.date.getTime(),
+                firstValue === 0 ? 1 : firstValue / d.downloads,
+              ]
+            })
+          )
+        })()
+      : undefined
+
+  const correctedPackageData = binnedPackageData.map((packageGroup) => {
+    const first = packageGroup.downloads[0]
+
+    return {
+      ...packageGroup,
+      downloads: packageGroup.downloads.map((d) => {
+        if (baseLineCorrectionsByDate) {
+          d.downloads =
+            d.downloads * (baseLineCorrectionsByDate.get(d.date.getTime()) || 1)
+        }
+
+        return {
+          ...d,
+          change: d.downloads - first.downloads,
+        }
+      }),
+    }
+  })
+
+  // Filter out any top-level hidden packages
+  const filteredPackageData = correctedPackageData.filter(
+    (pkg) => !pkg.baseline && !pkg.packages[0].hidden
+  )
+
+  const plotData = filteredPackageData.flatMap((d) => d.downloads)
+
+  let baseOptions: Plot.LineYOptions = {
+    x: 'date',
+    y: transform === 'normalize-y' ? 'change' : 'downloads',
+    fx: facetX,
+    fy: facetY,
+  } as const
+
+  const partialBinEnd = binUnit.floor(now)
+  const partialBinStart = binUnit.offset(partialBinEnd, -1)
+
+  // Force complete data mode when using relative change
+  const effectiveShowDataMode =
+    transform === 'normalize-y' ? 'complete' : showDataMode
+
   return (
-    <div className="flex-1">
+    <ParentSize>
+      {({ width = 1000, height }) => (
+        <PlotFigure
+          options={{
+            marginLeft: 70,
+            marginRight: 10,
+            marginBottom: 70,
+            width,
+            height,
+            marks: [
+              facetX || facetY
+                ? Plot.frame({
+                    strokeOpacity: 0.2,
+                  })
+                : undefined,
+              Plot.ruleY([0], {
+                stroke: 'currentColor',
+                strokeWidth: 1.5,
+                strokeOpacity: 0.5,
+              }),
+              effectiveShowDataMode === 'all' && [
+                Plot.lineY(
+                  plotData.filter((d) => d.date >= partialBinStart),
+                  {
+                    ...baseOptions,
+                    stroke: 'name',
+                    strokeWidth: 1.5,
+                    strokeDasharray: '2 4',
+                    strokeOpacity: 0.8,
+                    curve: 'monotone-x',
+                  }
+                ),
+              ],
+              Plot.lineY(
+                plotData.filter((d) => d.date < partialBinEnd),
+                {
+                  ...baseOptions,
+                  stroke: 'name',
+                  strokeWidth: 2,
+                  curve: 'monotone-x',
+                }
+              ),
+              Plot.tip(
+                effectiveShowDataMode === 'all'
+                  ? plotData
+                  : plotData.filter((d) => d.date < partialBinEnd),
+                Plot.pointer({
+                  ...baseOptions,
+                } as Plot.TipOptions)
+              ),
+            ].filter(Boolean),
+            x: {
+              label: 'Date',
+              labelOffset: 35,
+            },
+            y: {
+              label:
+                transform === 'normalize-y'
+                  ? 'Downloads Growth'
+                  : baselinePackage
+                  ? 'Downloads (% of baseline)'
+                  : 'Downloads',
+              labelOffset: 35,
+            },
+            grid: true,
+            color: {
+              domain: [...new Set(plotData.map((d) => d.name))],
+              range: [...new Set(plotData.map((d) => d.name))].map((pkg) =>
+                getPackageColor(pkg, packages)
+              ),
+              legend: false,
+            },
+          }}
+        />
+      )}
+    </ParentSize>
+  )
+}
+
+function PackageSearch() {
+  const [inputValue, setInputValue] = React.useState('')
+  const [open, setOpen] = React.useState(false)
+  const navigate = Route.useNavigate()
+  const containerRef = React.useRef<HTMLDivElement>(null)
+
+  const [debouncedInputValue] = useDebouncedValue(inputValue, {
+    wait: 150,
+  })
+
+  React.useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        containerRef.current &&
+        !containerRef.current.contains(event.target as Node)
+      ) {
+        setOpen(false)
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [])
+
+  const searchQuery = useQuery({
+    queryKey: ['npm-search', debouncedInputValue],
+    queryFn: async () => {
+      if (!debouncedInputValue || debouncedInputValue.length <= 2) return []
+
+      const response = await fetch(
+        `https://api.npms.io/v2/search?q=${encodeURIComponent(
+          debouncedInputValue
+        )}&size=10`
+      )
+      const data = await response.json()
+      const hasInputValue = data.results.find(
+        (r: any) => r.package.name === debouncedInputValue
+      )
+
+      return [
+        ...(hasInputValue
+          ? []
+          : [
+              {
+                name: debouncedInputValue,
+                label: `Use "${debouncedInputValue}"`,
+              },
+            ]),
+        ...data.results.map((r: any) => r.package),
+      ]
+    },
+    enabled: debouncedInputValue.length > 2,
+    placeholderData: keepPreviousData,
+  })
+
+  const handleInputChange = (value: string) => {
+    setInputValue(value)
+  }
+
+  const handleSelect = (value: string) => {
+    const selectedItem = searchQuery.data?.find((item) => item.name === value)
+    if (!selectedItem) return
+
+    navigate({
+      to: '.',
+      search: (prev) => ({
+        ...prev,
+        packageGroups: [
+          ...prev.packageGroups,
+          {
+            packages: [{ name: selectedItem.name }],
+          },
+        ],
+      }),
+      resetScroll: false,
+    })
+    setInputValue('')
+    setOpen(false)
+  }
+
+  return (
+    <div className="flex-1" ref={containerRef}>
       <div className="relative">
-        <div>
-          <input
-            {...getInputProps()}
-            placeholder="Search for a package..."
-            className="w-full bg-gray-500/10 rounded-md px-3 py-2 min-w-[200px]"
-          />
-          {isLoading ? (
+        <Command className="w-full" shouldFilter={false}>
+          <div className="flex items-center gap-1">
+            <MdSearch className="text-lg" />
+            <Command.Input
+              placeholder="Search for a package..."
+              className="w-full bg-gray-500/10 rounded-md px-2 py-1 min-w-[200px] text-sm"
+              value={inputValue}
+              onValueChange={handleInputChange}
+              onFocus={() => setOpen(true)}
+            />
+          </div>
+          {searchQuery.isLoading && (
             <div className="absolute right-2 top-0 bottom-0 flex items-center justify-center">
               <FaSpinner className="w-4 h-4 animate-spin" />
             </div>
-          ) : null}
-        </div>
-        <ul
-          {...getMenuProps()}
-          className={`absolute z-10 w-full mt-1 bg-white dark:bg-gray-800 rounded-md shadow-lg max-h-60 overflow-auto ${
-            isOpen ? '' : 'hidden'
-          }`}
-        >
-          {items.length === 0 ? (
-            <li className="px-3 py-2 text-gray-500">No packages found</li>
-          ) : (
-            items.map((item, index) => (
-              <li
-                key={item.name}
-                {...getItemProps({ item, index })}
-                className={`px-3 py-2 cursor-pointer ${
-                  highlightedIndex === index
-                    ? 'bg-gray-500/20 '
-                    : 'hover:bg-gray-500/20'
-                }`}
-              >
-                <div className="font-medium">{item.name}</div>
-                <div className="text-sm text-gray-500 dark:text-gray-400">
-                  {item.description}
-                </div>
-                <div className="text-xs text-gray-400 dark:text-gray-500">
-                  {item.version ? `v${item.version}• ` : ''}
-                  {item.publisher?.username}
-                </div>
-              </li>
-            ))
           )}
-        </ul>
+          {inputValue.length && open ? (
+            <Command.List className="absolute z-10 w-full mt-1 bg-white dark:bg-gray-800 rounded-md shadow-lg max-h-60 overflow-auto divide-y divide-gray-500/10">
+              {inputValue.length < 3 ? (
+                <div className="px-3 py-2">Keep typing to search...</div>
+              ) : searchQuery.isLoading ? (
+                <div className="px-3 py-2 flex items-center gap-2">
+                  <FaSpinner className="w-4 h-4 animate-spin" /> Searching...
+                </div>
+              ) : !searchQuery.data?.length ? (
+                <div className="px-3 py-2">No packages found</div>
+              ) : null}
+              {searchQuery.data?.map((item) => (
+                <Command.Item
+                  key={item.name}
+                  value={item.name}
+                  onSelect={handleSelect}
+                  className="px-3 py-2 cursor-pointer hover:bg-gray-500/20 data-[selected=true]:bg-gray-500/20"
+                >
+                  <div className="font-medium">{item.label || item.name}</div>
+                  <div className="text-sm text-gray-500 dark:text-gray-400">
+                    {item.description}
+                  </div>
+                  <div className="text-xs text-gray-400 dark:text-gray-500">
+                    {item.version ? `v${item.version}• ` : ''}
+                    {item.publisher?.username}
+                  </div>
+                </Command.Item>
+              ))}
+            </Command.List>
+          ) : null}
+        </Command>
       </div>
     </div>
   )
 }
 
+const defaultRangeBinTypes: Record<TimeRange, BinType> = {
+  '7-days': 'daily',
+  '30-days': 'daily',
+  '90-days': 'weekly',
+  '180-days': 'weekly',
+  '365-days': 'weekly',
+  '730-days': 'monthly',
+  '1825-days': 'monthly',
+  'all-time': 'monthly',
+}
+
+// Add a function to check if a binning option is valid for a time range
+function isBinningOptionValidForRange(
+  range: TimeRange,
+  binType: BinType
+): boolean {
+  switch (range) {
+    case '7-days':
+    case '30-days':
+      return binType === 'daily'
+    case '90-days':
+    case '180-days':
+      return (
+        binType === 'daily' || binType === 'weekly' || binType === 'monthly'
+      )
+    case '365-days':
+      return (
+        binType === 'daily' || binType === 'weekly' || binType === 'monthly'
+      )
+    case '730-days':
+    case '1825-days':
+    case 'all-time':
+      return true
+  }
+}
+
+const transformOptions = [
+  { value: 'none', label: 'Actual Values' },
+  { value: 'normalize-y', label: 'Relative Change' },
+] as const
+
+const facetOptions = [
+  { value: 'name', label: 'Package' },
+  // Add more options here in the future
+] as const
+
+type FacetValue = (typeof facetOptions)[number]['value']
+
 function RouteComponent() {
   const {
-    packages,
+    packageGroups,
     range = '7-days',
-    baseline,
-    viewMode = 'absolute',
-    binningOption: binningOptionParam,
-    alignStartDates = false,
+    transform,
+    facetX,
+    facetY,
+    binType: binTypeParam,
+    showDataMode: showDataModeParam = 'all',
+    height = 400,
   } = Route.useSearch()
-  const [hiddenPackages, setHiddenPackages] = React.useState<Set<string>>(
-    new Set()
-  )
-  const [hiddenSubPackages, setHiddenSubPackages] = React.useState<Set<string>>(
-    new Set()
-  )
   const [combiningPackage, setCombiningPackage] = React.useState<string | null>(
     null
   )
@@ -939,59 +928,81 @@ function RouteComponent() {
     x: number
     y: number
   } | null>(null)
+  const [openMenuPackage, setOpenMenuPackage] = React.useState<string | null>(
+    null
+  )
 
-  const binningOption =
-    binningOptionParam ??
-    (() => {
-      switch (range) {
-        case '7-days':
-          return 'daily'
-        case '30-days':
-          return 'daily'
-        case '90-days':
-          return 'weekly'
-        case '180-days':
-          return 'weekly'
-        case '365-days':
-          return 'weekly'
-        case '730-days':
-          return 'monthly'
-        case '1825-days':
-          return 'monthly'
-        case 'all-time':
-          return 'monthly'
-      }
-    })()
+  const binType = binTypeParam ?? defaultRangeBinTypes[range]
+  const binOption = binningOptionsByType[binType]
 
-  const togglePackageVisibility = (packageName: string) => {
-    setHiddenPackages((prev) => {
-      const next = new Set(prev)
-      if (next.has(packageName)) {
-        next.delete(packageName)
-      } else {
-        next.add(packageName)
-      }
-      return next
+  const handleBinnedChange = (value: BinType) => {
+    navigate({
+      to: '.',
+      search: (prev) => ({
+        ...prev,
+        binType: value,
+      }),
+      resetScroll: false,
     })
   }
 
-  const toggleSubPackageVisibility = (packageName: string) => {
-    setHiddenSubPackages((prev) => {
-      const next = new Set(prev)
-      if (next.has(packageName)) {
-        next.delete(packageName)
-      } else {
-        next.add(packageName)
-      }
-      return next
+  const handleBaselineChange = (packageName: string) => {
+    navigate({
+      to: '.',
+      search: (prev) => {
+        return {
+          ...prev,
+          packageGroups: prev.packageGroups.map((pkg) => {
+            const baseline =
+              pkg.packages[0].name === packageName ? !pkg.baseline : false
+
+            return {
+              ...pkg,
+              baseline,
+            }
+          }),
+        }
+      },
+      resetScroll: false,
+    })
+  }
+
+  const handleShowDataModeChange = (mode: ShowDataMode) => {
+    navigate({
+      to: '.',
+      search: (prev) => ({
+        ...prev,
+        showDataMode: mode,
+      }),
+      resetScroll: false,
+    })
+  }
+
+  const togglePackageVisibility = (index: number, packageName: string) => {
+    navigate({
+      to: '.',
+      search: (prev) => ({
+        ...prev,
+        packageGroups: prev.packageGroups.map((pkg, i) =>
+          i === index
+            ? {
+                ...pkg,
+                packages: pkg.packages.map((p) =>
+                  p.name === packageName ? { ...p, hidden: !p.hidden } : p
+                ),
+              }
+            : pkg
+        ),
+      }),
+      replace: true,
+      resetScroll: false,
     })
   }
 
   const npmQuery = useQuery(
     npmQueryOptions({
-      packages,
+      packageGroups: packageGroups,
       range,
-      hiddenSubPackages,
     })
   )
 
@@ -999,15 +1010,21 @@ function RouteComponent() {
     if (!combiningPackage) return
 
     // Find the package group that contains the combining package
-    const packageGroup = packages.find((pkg) =>
-      pkg.packages.includes(combiningPackage)
+    const packageGroup = packageGroups.find((pkg) =>
+      pkg.packages.some((p) => p.name === combiningPackage)
     )
 
     if (packageGroup) {
       // Update existing package group
-      const newPackages = packages.map((pkg) =>
+      const newPackages = packageGroups.map((pkg) =>
         pkg === packageGroup
-          ? { ...pkg, packages: [...pkg.packages, selectedPackage.name] }
+          ? {
+              ...pkg,
+              packages: [
+                ...pkg.packages,
+                { name: selectedPackage.name, hidden: true },
+              ],
+            }
           : pkg
       )
 
@@ -1015,7 +1032,7 @@ function RouteComponent() {
         to: '.',
         search: (prev) => ({
           ...prev,
-          packages: newPackages,
+          packageGroups: newPackages,
         }),
         resetScroll: false,
       })
@@ -1025,9 +1042,14 @@ function RouteComponent() {
         to: '.',
         search: (prev) => ({
           ...prev,
-          packages: [
-            ...packages,
-            { packages: [combiningPackage, selectedPackage.name] },
+          packageGroups: [
+            ...packageGroups,
+            {
+              packages: [
+                { name: combiningPackage },
+                { name: selectedPackage.name },
+              ],
+            },
           ],
         }),
         resetScroll: false,
@@ -1040,18 +1062,18 @@ function RouteComponent() {
 
   const handleRemoveFromGroup = (mainPackage: string, subPackage: string) => {
     // Find the package group
-    const packageGroup = packages.find((pkg) =>
-      pkg.packages.includes(mainPackage)
+    const packageGroup = packageGroups.find((pkg) =>
+      pkg.packages.some((p) => p.name === mainPackage)
     )
     if (!packageGroup) return
 
     // Remove the subpackage
     const updatedPackages = packageGroup.packages.filter(
-      (p) => p !== subPackage
+      (p) => p.name !== subPackage
     )
 
     // Update the packages array
-    const newPackages = packages
+    const newPackages = packageGroups
       .map((pkg) =>
         pkg === packageGroup ? { ...pkg, packages: updatedPackages } : pkg
       )
@@ -1061,63 +1083,36 @@ function RouteComponent() {
       to: '.',
       search: (prev) => ({
         ...prev,
-        packages: newPackages,
+        packageGroups: newPackages,
       }),
       resetScroll: false,
     })
   }
 
-  const removePackageName = (packageName: string) => {
-    const newPackages = packages.filter(
-      (pkg) => !pkg.packages.includes(packageName)
-    )
-
+  const handleRemovePackageName = (packageGroupIndex: number) => {
     navigate({
       to: '.',
       search: (prev) => ({
         ...prev,
-        packages: newPackages,
+        packageGroups: prev.packageGroups.filter(
+          (_, i) => i !== packageGroupIndex
+        ),
       }),
       resetScroll: false,
     })
   }
 
-  const setBinningOption = (newBinningOption: BinningOption) => {
+  const setBinningOption = (newBinningOption: BinType) => {
     navigate({
       to: '.',
-      search: (prev) => ({ ...prev, binningOption: newBinningOption }),
+      search: (prev) => ({ ...prev, binType: newBinningOption }),
       resetScroll: false,
     })
   }
 
   const handleRangeChange = (newRange: TimeRange) => {
     // Set default binning option based on the new range
-    switch (newRange) {
-      case '7-days':
-        setBinningOption('daily')
-        break
-      case '30-days':
-        setBinningOption('daily')
-        break
-      case '90-days':
-        setBinningOption('weekly')
-        break
-      case '180-days':
-        setBinningOption('monthly')
-        break
-      case '365-days':
-        setBinningOption('monthly')
-        break
-      case '730-days':
-        setBinningOption('monthly')
-        break
-      case '1825-days':
-        setBinningOption('yearly')
-        break
-      case 'all-time':
-        setBinningOption('yearly')
-        break
-    }
+    setBinningOption(defaultRangeBinTypes[newRange])
 
     navigate({
       to: '.',
@@ -1128,47 +1123,12 @@ function RouteComponent() {
     })
   }
 
-  const handleViewModeChange = (mode: 'absolute' | 'relative') => {
+  const handleTransformChange = (mode: TransformMode) => {
     navigate({
       to: '.',
       search: (prev) => ({
         ...prev,
-        viewMode: mode,
-      }),
-      resetScroll: false,
-    })
-  }
-
-  const handleBinnedChange = (
-    value: 'daily' | 'weekly' | 'monthly' | 'yearly'
-  ) => {
-    navigate({
-      to: '.',
-      search: (prev) => ({
-        ...prev,
-        binningOption: value,
-      }),
-      resetScroll: false,
-    })
-  }
-
-  const handleBaselineChange = (packageName: string) => {
-    navigate({
-      to: '.',
-      search: (prev) => ({
-        ...prev,
-        baseline: prev.baseline === packageName ? undefined : packageName,
-      }),
-      resetScroll: false,
-    })
-  }
-
-  const handleAlignStartDatesChange = (value: boolean) => {
-    navigate({
-      to: '.',
-      search: (prev) => ({
-        ...prev,
-        alignStartDates: value,
+        transform: mode,
       }),
       resetScroll: false,
     })
@@ -1199,39 +1159,83 @@ function RouteComponent() {
     }
   }
 
-  const validStats = (npmQuery.data ?? [])?.filter((data): data is NpmStats => {
-    if (!data) return false
-    return Array.isArray(data.downloads) && data.downloads.length > 0
-  })
-
   const handleColorClick = (packageName: string, event: React.MouseEvent) => {
     const rect = event.currentTarget.getBoundingClientRect()
     setColorPickerPosition({ x: rect.left, y: rect.bottom + 5 })
     setColorPickerPackage(packageName)
   }
 
-  const handleColorChange = (packageName: string, color: string | null) => {
+  const handleColorChange = throttle(
+    (packageName: string, color: string | null) => {
+      navigate({
+        to: '.',
+        search: (prev) => {
+          const packageGroup = packageGroups.find((pkg) =>
+            pkg.packages.some((p) => p.name === packageName)
+          )
+          if (!packageGroup) return prev
+
+          const newPackages = packageGroups.map((pkg) =>
+            pkg === packageGroup
+              ? color === null
+                ? { packages: pkg.packages }
+                : { ...pkg, color }
+              : pkg
+          )
+
+          return {
+            ...prev,
+            packageGroups: newPackages,
+          }
+        },
+        replace: true,
+        resetScroll: false,
+      })
+    },
+    {
+      wait: 100,
+    }
+  )
+
+  const onHeightChange = throttle(
+    (height: number) => {
+      navigate({
+        to: '.',
+        search: (prev) => ({ ...prev, height }),
+        resetScroll: false,
+      })
+    },
+    {
+      wait: 16,
+    }
+  )
+
+  const handleMenuOpenChange = (packageName: string, open: boolean) => {
+    if (!open) {
+      setOpenMenuPackage(null)
+    } else {
+      setOpenMenuPackage(packageName)
+    }
+  }
+
+  const handleFacetXChange = (value: FacetValue | undefined) => {
     navigate({
       to: '.',
-      search: (prev) => {
-        const packageGroup = packages.find((pkg) =>
-          pkg.packages.includes(packageName)
-        )
-        if (!packageGroup) return prev
+      search: (prev) => ({
+        ...prev,
+        facetX: value,
+      }),
+      resetScroll: false,
+    })
+  }
 
-        const newPackages = packages.map((pkg) =>
-          pkg === packageGroup
-            ? color === null
-              ? { packages: pkg.packages }
-              : { ...pkg, color }
-            : pkg
-        )
-
-        return {
-          ...prev,
-          packages: newPackages,
-        }
-      },
+  const handleFacetYChange = (value: FacetValue | undefined) => {
+    navigate({
+      to: '.',
+      search: (prev) => ({
+        ...prev,
+        facetY: value,
+      }),
       resetScroll: false,
     })
   }
@@ -1257,247 +1261,484 @@ function RouteComponent() {
       </div>
       <div className="flex gap-4">
         <div className="flex-1 bg-white dark:bg-black/50 rounded-lg space-y-4 p-4 shadow-xl max-w-full">
-          <div className="flex flex-col md:flex-row gap-4 sm:gap-4 flex-wrap">
+          <div className="flex gap-2 flex-wrap">
             <PackageSearch />
-            <select
-              value={range}
-              onChange={(e) => handleRangeChange(e.target.value as TimeRange)}
-              className="bg-gray-500/10 rounded-md px-2 sm:px-3 py-1.5 sm:py-2 text-sm sm:text-base"
-            >
-              {timeRanges.map(({ value, label }) => (
-                <option key={value} value={value}>
-                  {label}
-                </option>
-              ))}
-            </select>
-            <div className="flex items-stretch bg-gray-500/10 rounded-md text-sm sm:text-base">
-              <Tooltip content="Show absolute download numbers">
-                <button
-                  onClick={() => handleViewModeChange('absolute')}
-                  className={`px-2 sm:px-3 py-1 sm:py-1.5 rounded-l ${
-                    viewMode === 'absolute'
-                      ? 'text-white bg-sky-600 dark:bg-sky-800'
-                      : 'hover:bg-gray-500/20'
-                  }`}
-                >
-                  Absolute
-                </button>
+            <DropdownMenu>
+              <Tooltip content="Select time range">
+                <DropdownMenuTrigger asChild>
+                  <button className={twMerge(dropdownButtonStyles.base)}>
+                    {timeRanges.find((r) => r.value === range)?.label}
+                    <MdMoreVert className="w-3 h-3" />
+                  </button>
+                </DropdownMenuTrigger>
               </Tooltip>
-              <Tooltip content="Show growth relative to each package's starting point">
-                <button
-                  onClick={() => handleViewModeChange('relative')}
-                  className={`px-2 sm:px-3 py-1 sm:py-1.5 rounded-r ${
-                    viewMode === 'relative'
-                      ? 'text-white bg-sky-600 dark:bg-sky-800'
-                      : 'hover:bg-gray-500/20'
-                  }`}
-                >
-                  Relative
-                </button>
+              <DropdownMenuContent className="min-w-[200px] bg-white dark:bg-gray-800 rounded-lg shadow-lg p-2 z-50">
+                <div className="flex justify-between items-center mb-2">
+                  <span className="text-sm font-medium">Time Range</span>
+                </div>
+                {timeRanges.map(({ value, label }) => (
+                  <DropdownMenuItem
+                    key={value}
+                    onSelect={() => handleRangeChange(value)}
+                    className={twMerge(
+                      'w-full px-2 py-1.5 text-left text-sm rounded hover:bg-gray-500/20 flex items-center gap-2 outline-none cursor-pointer',
+                      value === range ? 'text-blue-500 bg-blue-500/10' : '',
+                      'data-[highlighted]:bg-gray-500/20 data-[highlighted]:text-blue-500'
+                    )}
+                  >
+                    {label}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+            <DropdownMenu>
+              <Tooltip content="Select binning interval">
+                <DropdownMenuTrigger asChild>
+                  <button
+                    className={twMerge(
+                      dropdownButtonStyles.base,
+                      binType !== 'weekly' && dropdownButtonStyles.active
+                    )}
+                  >
+                    {binningOptions.find((b) => b.value === binType)?.label}
+                    <MdMoreVert className="w-3 h-3" />
+                  </button>
+                </DropdownMenuTrigger>
               </Tooltip>
-            </div>
-            <div className="flex items-stretch bg-gray-500/10 rounded-md text-sm sm:text-base">
-              <Tooltip content="Group data by year">
-                <button
-                  onClick={() => handleBinnedChange('yearly')}
-                  className={`px-2 sm:px-3 py-1 sm:py-1.5 rounded-l ${
-                    binningOption === 'yearly'
-                      ? 'text-white bg-sky-600 dark:bg-sky-800'
-                      : 'hover:bg-gray-500/20'
-                  }`}
-                >
-                  Yearly
-                </button>
+              <DropdownMenuContent className="min-w-[200px] bg-white dark:bg-gray-800 rounded-lg shadow-lg p-2 z-50">
+                <div className="flex justify-between items-center mb-2">
+                  <span className="text-sm font-medium">Binning Interval</span>
+                </div>
+                {binningOptions.map(({ label, value }) => (
+                  <DropdownMenuItem
+                    key={value}
+                    onSelect={() => handleBinnedChange(value)}
+                    disabled={!isBinningOptionValidForRange(range, value)}
+                    className={twMerge(
+                      'w-full px-2 py-1.5 text-left text-sm rounded hover:bg-gray-500/20 flex items-center gap-2 outline-none cursor-pointer',
+                      binType === value ? 'text-blue-500 bg-blue-500/10' : '',
+                      'data-[highlighted]:bg-gray-500/20 data-[highlighted]:text-blue-500',
+                      !isBinningOptionValidForRange(range, value)
+                        ? 'opacity-50 cursor-not-allowed'
+                        : ''
+                    )}
+                  >
+                    {label}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+            <DropdownMenu>
+              <Tooltip content="Transform the Y-axis to show relative changes between packages. 'None' shows actual download numbers, while 'Normalize Y' shows percentage changes relative to the first data point.">
+                <DropdownMenuTrigger asChild>
+                  <button
+                    className={twMerge(
+                      dropdownButtonStyles.base,
+                      transform !== 'none' && dropdownButtonStyles.active
+                    )}
+                  >
+                    {
+                      transformOptions.find((opt) => opt.value === transform)
+                        ?.label
+                    }
+                    <MdMoreVert className="w-3 h-3" />
+                  </button>
+                </DropdownMenuTrigger>
               </Tooltip>
-              <Tooltip content="Group data by month">
-                <button
-                  onClick={() => handleBinnedChange('monthly')}
-                  className={`px-2 sm:px-3 py-1 sm:py-1.5 ${
-                    binningOption === 'monthly'
-                      ? 'text-white bg-sky-600 dark:bg-sky-800'
-                      : 'hover:bg-gray-500/20'
-                  }`}
-                >
-                  Monthly
-                </button>
+              <DropdownMenuContent className="min-w-[200px] bg-white dark:bg-gray-800 rounded-lg shadow-lg p-2 z-50">
+                <div className="flex justify-between items-center mb-2">
+                  <span className="text-sm font-medium">Y-Axis Transform</span>
+                </div>
+                {transformOptions.map(({ value, label }) => (
+                  <DropdownMenuItem
+                    key={value}
+                    onSelect={() =>
+                      handleTransformChange(value as TransformMode)
+                    }
+                    className={twMerge(
+                      'w-full px-2 py-1.5 text-left text-sm rounded hover:bg-gray-500/20 flex items-center gap-2 outline-none cursor-pointer',
+                      transform === value ? 'text-blue-500 bg-blue-500/10' : '',
+                      'data-[highlighted]:bg-gray-500/20 data-[highlighted]:text-blue-500'
+                    )}
+                  >
+                    {label}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+            <DropdownMenu>
+              <Tooltip content="Split the visualization horizontally by package">
+                <DropdownMenuTrigger asChild>
+                  <button
+                    className={twMerge(
+                      dropdownButtonStyles.base,
+                      facetX && dropdownButtonStyles.active
+                    )}
+                  >
+                    {facetX
+                      ? `Facet X by ${
+                          facetOptions.find((opt) => opt.value === facetX)
+                            ?.label
+                        }`
+                      : 'No Facet X'}
+                    <MdMoreVert className="w-3 h-3" />
+                  </button>
+                </DropdownMenuTrigger>
               </Tooltip>
-              <Tooltip content="Group data by week">
-                <button
-                  onClick={() => handleBinnedChange('weekly')}
-                  className={`px-2 sm:px-3 py-1 sm:py-1.5 ${
-                    binningOption === 'weekly'
-                      ? 'text-white bg-sky-600 dark:bg-sky-800'
-                      : 'hover:bg-gray-500/20'
-                  }`}
+              <DropdownMenuContent className="min-w-[200px] bg-white dark:bg-gray-800 rounded-lg shadow-lg p-2 z-50">
+                <div className="flex justify-between items-center mb-2">
+                  <span className="text-sm font-medium">Horizontal Facet</span>
+                </div>
+                <DropdownMenuItem
+                  onSelect={() => handleFacetXChange(undefined)}
+                  className={twMerge(
+                    'w-full px-2 py-1.5 text-left text-sm rounded hover:bg-gray-500/20 flex items-center gap-2 outline-none cursor-pointer',
+                    !facetX ? 'text-blue-500 bg-blue-500/10' : '',
+                    'data-[highlighted]:bg-gray-500/20 data-[highlighted]:text-blue-500'
+                  )}
                 >
-                  Weekly
-                </button>
+                  No Facet
+                </DropdownMenuItem>
+                {facetOptions.map(({ value, label }) => (
+                  <DropdownMenuItem
+                    key={value}
+                    onSelect={() => handleFacetXChange(value)}
+                    className={twMerge(
+                      'w-full px-2 py-1.5 text-left text-sm rounded hover:bg-gray-500/20 flex items-center gap-2 outline-none cursor-pointer',
+                      facetX === value ? 'text-blue-500 bg-blue-500/10' : '',
+                      'data-[highlighted]:bg-gray-500/20 data-[highlighted]:text-blue-500'
+                    )}
+                  >
+                    {label}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+            <DropdownMenu>
+              <Tooltip content="Split the visualization vertically by package">
+                <DropdownMenuTrigger asChild>
+                  <button
+                    className={twMerge(
+                      dropdownButtonStyles.base,
+                      facetY && dropdownButtonStyles.active
+                    )}
+                  >
+                    {facetY
+                      ? `Facet Y by ${
+                          facetOptions.find((opt) => opt.value === facetY)
+                            ?.label
+                        }`
+                      : 'No Facet Y'}
+                    <MdMoreVert className="w-3 h-3" />
+                  </button>
+                </DropdownMenuTrigger>
               </Tooltip>
-              <Tooltip content="Show daily data points">
-                <button
-                  onClick={() => handleBinnedChange('daily')}
-                  className={`px-2 sm:px-3 py-1 sm:py-1.5 rounded-r ${
-                    binningOption === 'daily'
-                      ? 'text-white bg-sky-600 dark:bg-sky-800'
-                      : 'hover:bg-gray-500/20'
-                  }`}
+              <DropdownMenuContent className="min-w-[200px] bg-white dark:bg-gray-800 rounded-lg shadow-lg p-2 z-50">
+                <div className="flex justify-between items-center mb-2">
+                  <span className="text-sm font-medium">Vertical Facet</span>
+                </div>
+                <DropdownMenuItem
+                  onSelect={() => handleFacetYChange(undefined)}
+                  className={twMerge(
+                    'w-full px-2 py-1.5 text-left text-sm rounded hover:bg-gray-500/20 flex items-center gap-2 outline-none cursor-pointer',
+                    !facetY ? 'text-blue-500 bg-blue-500/10' : '',
+                    'data-[highlighted]:bg-gray-500/20 data-[highlighted]:text-blue-500'
+                  )}
                 >
-                  Daily
-                </button>
+                  No Facet
+                </DropdownMenuItem>
+                {facetOptions.map(({ value, label }) => (
+                  <DropdownMenuItem
+                    key={value}
+                    onSelect={() => handleFacetYChange(value)}
+                    className={twMerge(
+                      'w-full px-2 py-1.5 text-left text-sm rounded hover:bg-gray-500/20 flex items-center gap-2 outline-none cursor-pointer',
+                      facetY === value ? 'text-blue-500 bg-blue-500/10' : '',
+                      'data-[highlighted]:bg-gray-500/20 data-[highlighted]:text-blue-500'
+                    )}
+                  >
+                    {label}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+            <DropdownMenu>
+              <Tooltip
+                content={
+                  transform === 'normalize-y'
+                    ? 'Only complete data is shown when using relative change'
+                    : 'Control how data is displayed'
+                }
+              >
+                <DropdownMenuTrigger asChild>
+                  <button
+                    className={twMerge(
+                      dropdownButtonStyles.base,
+                      showDataModeParam !== 'all' &&
+                        dropdownButtonStyles.active,
+                      transform === 'normalize-y' &&
+                        'opacity-50 cursor-not-allowed'
+                    )}
+                    disabled={transform === 'normalize-y'}
+                  >
+                    {
+                      showDataModeOptions.find(
+                        (opt) => opt.value === showDataModeParam
+                      )?.label
+                    }
+                    <MdMoreVert className="w-3 h-3" />
+                  </button>
+                </DropdownMenuTrigger>
               </Tooltip>
-            </div>
-            <div className="flex items-stretch bg-gray-500/10 rounded-md text-sm sm:text-base">
-              <Tooltip content="Align all packages to start from their first non-zero download">
-                <button
-                  onClick={() => handleAlignStartDatesChange(!alignStartDates)}
-                  className={`px-2 sm:px-3 py-1 sm:py-1.5 rounded ${
-                    alignStartDates
-                      ? 'text-white bg-sky-600 dark:bg-sky-800'
-                      : 'hover:bg-gray-500/20'
-                  }`}
-                >
-                  Align Start Dates
-                </button>
-              </Tooltip>
-            </div>
+              <DropdownMenuContent className="min-w-[200px] bg-white dark:bg-gray-800 rounded-lg shadow-lg p-2 z-50">
+                <div className="flex justify-between items-center mb-2">
+                  <span className="text-sm font-medium">Data Display Mode</span>
+                </div>
+                {showDataModeOptions.map(({ value, label }) => (
+                  <DropdownMenuItem
+                    key={value}
+                    onSelect={() => handleShowDataModeChange(value)}
+                    disabled={transform === 'normalize-y'}
+                    className={twMerge(
+                      'w-full px-2 py-1.5 text-left text-sm rounded hover:bg-gray-500/20 flex items-center gap-2 outline-none cursor-pointer',
+                      showDataModeParam === value
+                        ? 'text-blue-500 bg-blue-500/10'
+                        : '',
+                      'data-[highlighted]:bg-gray-500/20 data-[highlighted]:text-blue-500',
+                      transform === 'normalize-y'
+                        ? 'opacity-50 cursor-not-allowed'
+                        : ''
+                    )}
+                  >
+                    {label}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
           <div className="flex flex-wrap gap-1 sm:gap-2">
-            {packages.map((pkg) => {
+            {packageGroups.map((pkg, index) => {
               const mainPackage = pkg.packages[0]
               const packageList = pkg.packages
               const isCombined = packageList.length > 1
-              const subPackages = packageList.filter((p) => p !== mainPackage)
-              const color = getPackageColor(mainPackage, packages)
-              const hasCustomColor = pkg.color !== undefined
+              const subPackages = packageList.filter(
+                (p) => p.name !== mainPackage.name
+              )
+              const color = getPackageColor(mainPackage.name, packageGroups)
+
+              // Get error for this package if any
+              const packageError = npmQuery.data?.[index]?.error
 
               return (
                 <div
-                  key={mainPackage}
-                  className={`flex flex-col pl-1 sm:pl-2 py-0.5 sm:py-1 rounded-md ${
-                    baseline === mainPackage
-                      ? 'text-blue-500'
-                      : 'text-gray-900 dark:text-gray-100'
-                  } text-xs sm:text-sm`}
+                  key={mainPackage.name}
+                  className={`flex flex-col items-start
+                    rounded-md text-gray-900
+                    px-1 py-0.5
+                    sm:px-2 sm:py-1
+                    dark:text-gray-100 text-xs sm:text-sm`}
                   style={{
                     backgroundColor: `${color}20`,
                   }}
                 >
-                  <div className="flex items-center">
-                    <Tooltip content="Toggle package visibility">
-                      <button
-                        onClick={() => togglePackageVisibility(mainPackage)}
-                        className={`p-0.5 sm:p-1 hover:text-blue-500`}
+                  <div className="flex items-center gap-1 w-full">
+                    {pkg.baseline ? (
+                      <>
+                        <Tooltip content="Remove baseline">
+                          <button
+                            onClick={() =>
+                              handleBaselineChange(mainPackage.name)
+                            }
+                            className="hover:text-blue-500"
+                          >
+                            <MdPushPin className="w-3 h-3 sm:w-4 sm:h-4 text-blue-500" />
+                          </button>
+                        </Tooltip>
+                        <span>{mainPackage.name}</span>
+                      </>
+                    ) : (
+                      <>
+                        <Tooltip content="Change color">
+                          <button
+                            onClick={(e) =>
+                              handleColorClick(mainPackage.name, e)
+                            }
+                            className="hover:opacity-80"
+                          >
+                            <div
+                              className="w-3 h-3 sm:w-4 sm:h-4 rounded"
+                              style={{ backgroundColor: color }}
+                            />
+                          </button>
+                        </Tooltip>
+                        <Tooltip content="Toggle package visibility">
+                          <button
+                            onClick={() =>
+                              togglePackageVisibility(index, mainPackage.name)
+                            }
+                            className={twMerge(
+                              'hover:text-blue-500 flex items-center gap-1',
+                              mainPackage.hidden ? 'opacity-50' : ''
+                            )}
+                          >
+                            {mainPackage.name}
+                            {mainPackage.hidden ? (
+                              <MdVisibilityOff className="w-3 h-3 sm:w-4 sm:h-4" />
+                            ) : null}
+                          </button>
+                        </Tooltip>
+                      </>
+                    )}
+                    {isCombined ? (
+                      <span className="text-black/70 dark:text-white/70 text-[.7em] font-black py-0.5 px-1 leading-none rounded-md border-[1.5px] border-current opacity-80">
+                        + {subPackages.length}
+                      </span>
+                    ) : null}
+                    <div className="relative flex items-center">
+                      <DropdownMenu
+                        open={openMenuPackage === mainPackage.name}
+                        onOpenChange={(open) =>
+                          handleMenuOpenChange(mainPackage.name, open)
+                        }
                       >
-                        {hiddenPackages.has(mainPackage) ? (
-                          <MdVisibilityOff className="w-3 h-3 sm:w-4 sm:h-4" />
-                        ) : (
-                          <MdVisibility className="w-3 h-3 sm:w-4 sm:h-4" />
-                        )}
-                      </button>
-                    </Tooltip>
+                        <Tooltip content="More options">
+                          <DropdownMenuTrigger asChild>
+                            <button className="px-0.5 sm:px-1 hover:text-blue-500">
+                              <MdMoreVert className="w-3 h-3 sm:w-4 sm:h-4" />
+                            </button>
+                          </DropdownMenuTrigger>
+                        </Tooltip>
+                        <DropdownMenuContent
+                          className="min-w-[200px] bg-white dark:bg-gray-800 rounded-lg shadow-lg p-2 z-50"
+                          sideOffset={5}
+                        >
+                          <div className="flex justify-between items-center mb-2">
+                            <span className="text-sm font-medium">Options</span>
+                          </div>
+                          <div className="space-y-1">
+                            <DropdownMenuItem
+                              onSelect={(e) => {
+                                e.preventDefault()
+                                togglePackageVisibility(index, mainPackage.name)
+                              }}
+                              className="w-full px-2 py-1.5 text-left text-sm rounded hover:bg-gray-500/20 flex items-center gap-2 outline-none cursor-pointer"
+                            >
+                              {mainPackage.hidden ? (
+                                <MdVisibilityOff className="text-sm" />
+                              ) : (
+                                <MdVisibility className="text-sm" />
+                              )}
+                              {mainPackage.hidden
+                                ? 'Show Package'
+                                : 'Hide Package'}
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              onSelect={(e) => {
+                                e.preventDefault()
+                                handleBaselineChange(mainPackage.name)
+                              }}
+                              className={twMerge(
+                                'w-full px-2 py-1.5 text-left text-sm rounded hover:bg-gray-500/20 flex items-center gap-2 outline-none cursor-pointer',
+                                pkg.baseline ? 'text-blue-500' : ''
+                              )}
+                            >
+                              <MdPushPin className="text-sm" />
+                              {pkg.baseline
+                                ? 'Remove Baseline'
+                                : 'Set as Baseline'}
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              onSelect={(e) => {
+                                e.preventDefault()
+                                handleColorClick(
+                                  mainPackage.name,
+                                  e as unknown as React.MouseEvent
+                                )
+                              }}
+                              className="w-full px-2 py-1.5 text-left text-sm rounded hover:bg-gray-500/20 flex items-center gap-2 outline-none cursor-pointer"
+                            >
+                              <div
+                                className="w-3 h-3 rounded-full"
+                                style={{ backgroundColor: color }}
+                              />
+                              Change Color
+                            </DropdownMenuItem>
+                            {isCombined && (
+                              <>
+                                <div className="h-px bg-gray-500/20 my-1" />
+                                <div className="px-2 py-1 text-xs font-medium text-gray-500">
+                                  Sub-packages
+                                </div>
+                                {subPackages.map((subPackage) => (
+                                  <DropdownMenuItem
+                                    key={subPackage.name}
+                                    onSelect={(e) => {
+                                      e.preventDefault()
+                                      togglePackageVisibility(
+                                        index,
+                                        subPackage.name
+                                      )
+                                    }}
+                                    className="w-full px-2 py-1.5 text-left text-sm rounded hover:bg-gray-500/20 flex items-center gap-2 outline-none cursor-pointer"
+                                  >
+                                    <div className="flex-1 flex items-center justify-between">
+                                      <div className="flex items-center gap-2">
+                                        {subPackage.hidden ? (
+                                          <MdVisibilityOff className="text-sm" />
+                                        ) : (
+                                          <MdVisibility className="text-sm" />
+                                        )}
+                                        <span
+                                          className={
+                                            subPackage.hidden
+                                              ? 'opacity-50'
+                                              : ''
+                                          }
+                                        >
+                                          {subPackage.name}
+                                        </span>
+                                      </div>
+                                      <button
+                                        onClick={(e) => {
+                                          e.stopPropagation()
+                                          handleRemoveFromGroup(
+                                            mainPackage.name,
+                                            subPackage.name
+                                          )
+                                        }}
+                                        className="p-1 text-gray-400 hover:text-red-500"
+                                      >
+                                        <MdClose className="w-3 h-3" />
+                                      </button>
+                                    </div>
+                                  </DropdownMenuItem>
+                                ))}
+                              </>
+                            )}
+                            <DropdownMenuItem
+                              onSelect={(e) => {
+                                e.preventDefault()
+                                handleCombinePackage(mainPackage.name)
+                              }}
+                              className="w-full px-2 py-1.5 text-left text-sm rounded hover:bg-gray-500/20 flex items-center gap-2 outline-none cursor-pointer"
+                            >
+                              <MdAdd className="text-sm" />
+                              Add Packages
+                            </DropdownMenuItem>
+                          </div>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </div>
                     <button
-                      onClick={() => togglePackageVisibility(mainPackage)}
-                      className={`px-0.5 sm:px-1 hover:text-blue-500 ${
-                        hiddenPackages.has(mainPackage) ? 'opacity-50' : ''
-                      }`}
-                    >
-                      {mainPackage}
-                    </button>
-                    <Tooltip content="Use as baseline for comparison">
-                      <button
-                        onClick={() => handleBaselineChange(mainPackage)}
-                        className="p-0.5 sm:p-1 hover:text-blue-500"
-                      >
-                        {baseline === mainPackage ? (
-                          <MdLock className="w-3 h-3 sm:w-4 sm:h-4" />
-                        ) : (
-                          <MdLockOpen className="w-3 h-3 sm:w-4 sm:h-4" />
-                        )}
-                      </button>
-                    </Tooltip>
-                    <Tooltip content="Add packages to this group">
-                      <button
-                        onClick={() => handleCombinePackage(mainPackage)}
-                        className="p-0.5 sm:p-1 hover:text-blue-500"
-                      >
-                        <MdAdd className="w-3 h-3 sm:w-4 sm:h-4" />
-                      </button>
-                    </Tooltip>
-                    <Tooltip
-                      content={
-                        hasCustomColor
-                          ? 'Reset to default color'
-                          : 'Change color'
-                      }
-                    >
-                      <button
-                        onClick={(e) => handleColorClick(mainPackage, e)}
-                        className={`p-0.5 sm:p-1 hover:text-blue-500 ${
-                          hasCustomColor
-                            ? 'ring-1 ring-current rounded-full'
-                            : ''
-                        }`}
-                      >
-                        <div
-                          className="w-3 h-3 sm:w-4 sm:h-4 rounded-full"
-                          style={{ backgroundColor: color }}
-                        />
-                      </button>
-                    </Tooltip>
-                    <button
-                      onClick={() => removePackageName(mainPackage)}
-                      className="p-0.5 sm:p-1 text-gray-500 hover:text-red-500"
+                      onClick={() => handleRemovePackageName(index)}
+                      className="ml-auto pl-0.5 sm:pl-1 text-gray-500 hover:text-red-500"
                     >
                       <MdClose className="w-3 h-3 sm:w-4 sm:h-4" />
                     </button>
                   </div>
-                  {isCombined && (
-                    <div className="mt-0.5 sm:mt-1 space-y-0.5 sm:space-y-1">
-                      {subPackages.map((subPackage) => (
-                        <div
-                          key={subPackage}
-                          className="flex items-center text-gray-500"
-                        >
-                          <Tooltip content="Toggle sub-package visibility">
-                            <button
-                              onClick={() =>
-                                toggleSubPackageVisibility(subPackage)
-                              }
-                              className={`px-0.5 sm:px-1 hover:text-blue-500 ${
-                                hiddenSubPackages.has(subPackage)
-                                  ? 'opacity-50'
-                                  : ''
-                              }`}
-                            >
-                              {hiddenSubPackages.has(subPackage) ? (
-                                <MdVisibilityOff className="w-3 h-3 sm:w-4 sm:h-4" />
-                              ) : (
-                                <MdVisibility className="w-3 h-3 sm:w-4 sm:h-4" />
-                              )}
-                            </button>
-                          </Tooltip>
-                          <button
-                            onClick={() =>
-                              toggleSubPackageVisibility(subPackage)
-                            }
-                            className={`px-0.5 sm:px-1 hover:text-blue-500 ${
-                              hiddenSubPackages.has(subPackage)
-                                ? 'opacity-50'
-                                : ''
-                            }`}
-                          >
-                            {subPackage}
-                          </button>
-                          <button
-                            onClick={() =>
-                              handleRemoveFromGroup(mainPackage, subPackage)
-                            }
-                            className="ml-0.5 sm:ml-1 p-0.5 text-gray-400 hover:text-red-500"
-                          >
-                            <MdClose className="w-3 h-3 sm:w-4 sm:h-4" />
-                          </button>
-                        </div>
-                      ))}
+                  {packageError && (
+                    <div className="mt-1 text-xs font-mono text-red-500 px-1 font-medium bg-red-500/10 rounded">
+                      {packageError}
                     </div>
                   )}
                 </div>
@@ -1570,18 +1811,9 @@ function RouteComponent() {
             >
               <div className="flex justify-between items-center mb-2">
                 <span className="text-sm font-medium">Pick a color</span>
-                <button
-                  onClick={() => {
-                    setColorPickerPackage(null)
-                    setColorPickerPosition(null)
-                  }}
-                  className="p-1 hover:text-red-500"
-                >
-                  <MdClose className="w-4 h-4" />
-                </button>
               </div>
               <HexColorPicker
-                color={getPackageColor(colorPickerPackage, packages)}
+                color={getPackageColor(colorPickerPackage, packageGroups)}
                 onChange={(color: string) =>
                   handleColorChange(colorPickerPackage, color)
                 }
@@ -1610,18 +1842,21 @@ function RouteComponent() {
             </div>
           )}
 
-          {Object.keys(packages).length ? (
+          {Object.keys(packageGroups).length ? (
             <div className="">
               <div className="space-y-2 sm:space-y-4">
-                <NpmStatsChart
-                  stats={validStats}
-                  baseline={baseline}
-                  viewMode={viewMode}
-                  hiddenPackages={hiddenPackages}
-                  binningOption={binningOption}
-                  alignStartDates={alignStartDates}
-                  packages={packages}
-                />
+                <Resizable height={height} onHeightChange={onHeightChange}>
+                  <NpmStatsChart
+                    range={range}
+                    queryData={npmQuery.data}
+                    transform={transform}
+                    binType={binType}
+                    packages={packageGroups}
+                    facetX={facetX}
+                    facetY={facetY}
+                    showDataMode={showDataModeParam}
+                  />
+                </Resizable>
                 <div className="overflow-x-auto rounded-xl">
                   <table className="min-w-full">
                     <thead className="bg-gray-500/10">
@@ -1629,72 +1864,170 @@ function RouteComponent() {
                         <th className="px-3 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                           Package Name
                         </th>
-                        <th className="px-3 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                          Total Downloads
+                        <th className="px-3 sm:px-6 py-2 sm:py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                          Total Period Downloads
                         </th>
-                        <th className="px-3 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                          Growth
+                        <th className="px-3 sm:px-6 py-2 sm:py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                          Downloads last {binOption.single}
                         </th>
-                        <th className="px-3 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                          % Growth
+                        {/* <th className="px-3 sm:px-6 py-2 sm:py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                          Period Growth
                         </th>
+                        <th className="px-3 sm:px-6 py-2 sm:py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                          Period Growth %
+                        </th> */}
                       </tr>
                     </thead>
-                    <tbody className="bg-gray-500/5">
+                    <tbody className="bg-gray-500/5 divide-y divide-gray-500/10">
                       {npmQuery.data
-                        ?.map((stats) => {
-                          if (!stats?.downloads?.length) return null
+                        ?.map((packageGroupDownloads, index) => {
+                          if (
+                            !packageGroupDownloads.packages.some(
+                              (p) => p.downloads.length
+                            )
+                          ) {
+                            return null
+                          }
+
+                          // const flooredStartData =
+                          //   binOption.bin.floor(startDate)
+
+                          const firstPackage = packageGroupDownloads.packages[0]
+
+                          // const rangeFilteredDownloads =
+                          //   packageGroupDownloads.packages.map((p) => {
+                          //     return {
+                          //       ...p,
+                          //       downloads: p.downloads.filter(
+                          //         (d) => d.day >= startDate
+                          //       ),
+                          //     }
+                          //   })
 
                           // Sort downloads by date
-                          const sortedDownloads = [...stats.downloads].sort(
-                            (a, b) =>
-                              new Date(a.day).getTime() -
-                              new Date(b.day).getTime()
+                          const sortedDownloads = packageGroupDownloads.packages
+                            .flatMap((p) => p.downloads)
+                            .sort(
+                              (a, b) =>
+                                d3.timeDay(a.day).getTime() -
+                                d3.timeDay(b.day).getTime()
+                            )
+
+                          // Get the binning unit and calculate partial bin boundaries
+                          const binUnit = binOption.bin
+                          const now = d3.timeDay(new Date())
+                          const partialBinEnd = binUnit.floor(now)
+
+                          // Filter downloads based on showDataMode for total downloads
+                          const filteredDownloads = sortedDownloads.filter(
+                            (d) => d3.timeDay(new Date(d.day)) < partialBinEnd
                           )
 
-                          // Get the latest week of downloads
-                          const latestWeek = sortedDownloads.slice(-7)
-                          const latestWeeklyDownloads = latestWeek.reduce(
-                            (sum, day) => sum + day.downloads,
-                            0
+                          // Group downloads by bin using d3
+                          const binnedDownloads = d3.sort(
+                            d3.rollup(
+                              filteredDownloads,
+                              (v) => d3.sum(v, (d) => d.downloads),
+                              (d) => binUnit.floor(new Date(d.day))
+                            ),
+                            (d) => d[0]
                           )
 
-                          // Calculate growth metrics
-                          const firstWeek = sortedDownloads.slice(0, 7)
-                          const firstWeeklyDownloads = firstWeek.reduce(
-                            (sum, day) => sum + day.downloads,
-                            0
+                          const color = getPackageColor(
+                            firstPackage.name,
+                            packageGroups
                           )
 
-                          const growth =
-                            latestWeeklyDownloads - firstWeeklyDownloads
-                          const growthPercentage =
-                            firstWeeklyDownloads > 0
-                              ? ((latestWeeklyDownloads -
-                                  firstWeeklyDownloads) /
-                                  firstWeeklyDownloads) *
-                                100
-                              : 0
+                          const firstBin = binnedDownloads[0]
+                          const lastBin =
+                            binnedDownloads[binnedDownloads.length - 1]
+
+                          const growth = lastBin[1] - firstBin[1]
+                          const growthPercentage = growth / firstBin[1]
 
                           return {
-                            package: stats.package,
-                            totalDownloads: latestWeeklyDownloads,
+                            package: firstPackage.name,
+                            totalDownloads: d3.sum(
+                              binnedDownloads,
+                              (d) => d[1]
+                            ),
+                            binDownloads: lastBin[1],
                             growth,
                             growthPercentage,
+                            color,
+                            hidden: firstPackage.hidden,
+                            index,
                           }
                         })
                         .filter(Boolean)
-                        .sort((a, b) => b!.totalDownloads - a!.totalDownloads)
+                        .sort((a, b) =>
+                          transform === 'normalize-y'
+                            ? b!.growth - a!.growth
+                            : b!.binDownloads - a!.binDownloads
+                        )
                         .map((stat) => (
                           <tr key={stat!.package}>
-                            <td className="px-3 sm:px-6 py-2 sm:py-4 whitespace-nowrap text-xs sm:text-sm font-medium text-gray-900 dark:text-gray-100">
-                              {stat!.package}
+                            <td className="px-3 sm:px-6 py-1 sm:py-2 whitespace-nowrap text-xs sm:text-sm font-medium text-gray-900 dark:text-gray-100">
+                              <div className="flex items-center gap-2">
+                                <Tooltip content="Change color">
+                                  <button
+                                    onClick={(e) =>
+                                      handleColorClick(stat!.package, e)
+                                    }
+                                    className="hover:opacity-80"
+                                  >
+                                    <div
+                                      className="w-4 h-4 rounded"
+                                      style={{ backgroundColor: stat!.color }}
+                                    />
+                                  </button>
+                                </Tooltip>
+                                <div className="flex items-center gap-1">
+                                  <div className="flex items-center gap-0.5">
+                                    <Tooltip content="Toggle visibility">
+                                      <button
+                                        onClick={() =>
+                                          togglePackageVisibility(
+                                            stat!.index,
+                                            stat!.package
+                                          )
+                                        }
+                                        className="p-0.5 hover:text-blue-500 flex items-center gap-1"
+                                      >
+                                        <span
+                                          className={
+                                            stat!.hidden ? 'opacity-50' : ''
+                                          }
+                                        >
+                                          {stat!.package}
+                                        </span>
+                                        {stat!.hidden ? (
+                                          <MdVisibilityOff className="" />
+                                        ) : null}
+                                      </button>
+                                    </Tooltip>
+                                    <Tooltip content="Remove package">
+                                      <button
+                                        onClick={() =>
+                                          handleRemovePackageName(stat!.index)
+                                        }
+                                        className="p-0.5 text-gray-500 hover:text-red-500"
+                                      >
+                                        <MdClose className="" />
+                                      </button>
+                                    </Tooltip>
+                                  </div>
+                                </div>
+                              </div>
                             </td>
-                            <td className="px-3 sm:px-6 py-2 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-500 dark:text-gray-400">
-                              {formatNumber(stat!.totalDownloads)}/week
+                            <td className="px-3 sm:px-6 py-1 sm:py-2 whitespace-nowrap text-xs sm:text-sm text-gray-500 dark:text-gray-400 text-right">
+                              {formatNumber(stat!.totalDownloads)}
                             </td>
-                            <td
-                              className={`px-3 sm:px-6 py-2 sm:py-4 whitespace-nowrap text-xs sm:text-sm ${
+                            <td className="px-3 sm:px-6 py-1 sm:py-2 whitespace-nowrap text-xs sm:text-sm text-gray-500 dark:text-gray-400 text-right">
+                              {formatNumber(stat!.binDownloads)}
+                            </td>
+                            {/* <td
+                              className={`px-3 sm:px-6 py-1 sm:py-2 whitespace-nowrap text-xs sm:text-sm text-right ${
                                 stat!.growth > 0
                                   ? 'text-green-500'
                                   : stat!.growth < 0
@@ -1702,11 +2035,17 @@ function RouteComponent() {
                                   : 'text-gray-500'
                               }`}
                             >
-                              {stat!.growth > 0 ? '+' : ''}
-                              {formatNumber(stat!.growth)}/week
+                              <div className="inline-flex items-center gap-1">
+                                {stat!.growth > 0 ? (
+                                  <MdArrowUpward />
+                                ) : (
+                                  <MdArrowDownward />
+                                )}
+                                {formatNumber(Math.abs(stat!.growth))}
+                              </div>
                             </td>
                             <td
-                              className={`px-3 sm:px-6 py-2 sm:py-4 whitespace-nowrap text-xs sm:text-sm ${
+                              className={`px-3 sm:px-6 py-1 sm:py-2 whitespace-nowrap text-xs sm:text-sm text-right ${
                                 stat!.growthPercentage > 0
                                   ? 'text-green-500'
                                   : stat!.growthPercentage < 0
@@ -1714,9 +2053,15 @@ function RouteComponent() {
                                   : 'text-gray-500'
                               }`}
                             >
-                              {stat!.growthPercentage > 0 ? '+' : ''}
-                              {stat!.growthPercentage.toFixed(1)}%
-                            </td>
+                              <div className="inline-flex items-center gap-1">
+                                {stat!.growthPercentage > 0 ? (
+                                  <MdArrowUpward />
+                                ) : (
+                                  <MdArrowDownward />
+                                )}
+                                {Math.abs(stat!.growthPercentage).toFixed(1)}%
+                              </div>
+                            </td> */}
                           </tr>
                         ))}
                     </tbody>
@@ -1730,36 +2075,65 @@ function RouteComponent() {
           <div>
             <h2 className="text-xl font-semibold mb-4">Popular Comparisons</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {getPopularComparisons().map((comparison) => (
-                <Link
-                  key={comparison.title}
-                  to="."
-                  search={(d) => ({
-                    range: '365-days',
-                    viewMode: 'absolute',
-                    binningOption: 'monthly',
-                    ...d,
-                    packages: comparison.packages,
-                  })}
-                  className="block p-4 bg-gray-500/10 hover:bg-gray-500/20 rounded-lg transition-colors"
-                >
-                  <h3 className="font-medium mb-2">{comparison.title}</h3>
-                  <div className="flex flex-wrap gap-2">
-                    {comparison.packages.map((pkg) => (
-                      <div
-                        key={pkg.packages[0]}
-                        className="flex items-center gap-1.5 text-sm"
-                      >
-                        <div
-                          className="w-3 h-3 rounded-full"
-                          style={{ backgroundColor: pkg.color }}
-                        />
-                        <span>{pkg.packages[0]}</span>
+              {getPopularComparisons().map((comparison) => {
+                const baselinePackage = comparison.packageGroups.find(
+                  (pg) => pg.baseline
+                )
+                return (
+                  <Link
+                    key={comparison.title}
+                    to="."
+                    search={(prev) => ({
+                      ...prev,
+                      packageGroups: comparison.packageGroups,
+                      baseline: comparison.packageGroups.find(
+                        (pg) => pg.baseline
+                      )?.packages[0].name,
+                    })}
+                    resetScroll={false}
+                    onClick={(e) => {
+                      window.scrollTo({
+                        top: 0,
+                        behavior: 'smooth',
+                      })
+                    }}
+                    className="block p-4 bg-gray-500/10 hover:bg-gray-500/20 rounded-lg transition-colors space-y-4"
+                  >
+                    <div className="space-y-2">
+                      <div>
+                        <h3 className="font-medium">{comparison.title}</h3>
                       </div>
-                    ))}
-                  </div>
-                </Link>
-              ))}
+                      <div className="flex flex-wrap gap-2">
+                        {comparison.packageGroups
+                          .filter((d) => !d.baseline)
+                          .map((packageGroup) => (
+                            <div
+                              key={packageGroup.packages[0].name}
+                              className="flex items-center gap-1.5 text-sm"
+                            >
+                              <div
+                                className="w-3 h-3 rounded-full"
+                                style={{
+                                  backgroundColor:
+                                    packageGroup.color || defaultColors[0],
+                                }}
+                              />
+                              <span>{packageGroup.packages[0].name}</span>
+                            </div>
+                          ))}
+                      </div>
+                    </div>
+                    {baselinePackage && (
+                      <div className="flex items-center gap-1 text-sm">
+                        <div className="font-medium">Baseline:</div>
+                        <div className="bg-gray-500/10 rounded-md px-2 py-1 leading-none font-bold text-sm">
+                          {baselinePackage.packages[0].name}
+                        </div>
+                      </div>
+                    )}
+                  </Link>
+                )
+              })}
             </div>
           </div>
         </div>

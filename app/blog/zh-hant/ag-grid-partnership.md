@@ -1,6 +1,6 @@
 ---
 title: TanStack Table + Ag-Grid 合作夥伴關係
-published: 6/17/2022
+published: 2022-06-17
 authors:
   - Tanner Linsley
   - Niall Crosby
